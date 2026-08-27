@@ -65,6 +65,11 @@ class AuthProvider extends ChangeNotifier {
       final user = await _dataStore.getUserById(uid);
       if (user != null) {
         _currentUser = user;
+        // Re-initialize Firestore streams scoped to the logged-in user's role
+        await _dataStore.initialize(
+          userId: user.uid,
+          userRole: user.role.key,
+        );
       }
     } catch (_) {}
     _isLoading = false;

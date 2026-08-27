@@ -105,11 +105,15 @@ class FirebaseDataStore {
 
   final List<StreamSubscription> _firestoreSubscriptions = [];
 
-  /// Initialize real-time Firestore listeners for all 9 collections
-  Future<void> initialize() async {
-    if (_initialized) return;
+  /// Initialize real-time Firestore listeners for all 9 collections.
+  /// Pass [userId] and [userRole] after login to scope participant-only collections.
+  Future<void> initialize({String userId = '', String userRole = ''}) async {
+    if (_initialized && userId.isEmpty) return;
 
     _cancelSubscriptions();
+    _initialized = false;
+
+    final isStaff = userRole == 'organizer' || userRole == 'admin';
 
     // 1. Users Stream
     _firestoreSubscriptions.add(
@@ -123,9 +127,7 @@ class FirebaseDataStore {
           }
           _usersStreamController.add(List.unmodifiable(_users));
         },
-        onError: (err) {
-          // Stream error handled gracefully (e.g. offline/rules)
-        },
+        onError: (err) {},
       ),
     );
 
@@ -146,9 +148,12 @@ class FirebaseDataStore {
       ),
     );
 
-    // 3. Registrations Stream
+    // 3. Registrations Stream — scoped to current user if participant
+    final regQuery = (isStaff || userId.isEmpty)
+        ? _registrationsCol
+        : _registrationsCol.where('studentId', isEqualTo: userId);
     _firestoreSubscriptions.add(
-      _registrationsCol.snapshots().listen(
+      regQuery.snapshots().listen(
         (snapshot) {
           _registrations.clear();
           for (var doc in snapshot.docs) {
@@ -163,9 +168,12 @@ class FirebaseDataStore {
       ),
     );
 
-    // 4. Attendance Stream
+    // 4. Attendance Stream — scoped to current user if participant
+    final attQuery = (isStaff || userId.isEmpty)
+        ? _attendanceCol
+        : _attendanceCol.where('studentId', isEqualTo: userId);
     _firestoreSubscriptions.add(
-      _attendanceCol.snapshots().listen(
+      attQuery.snapshots().listen(
         (snapshot) {
           _attendance.clear();
           for (var doc in snapshot.docs) {
@@ -197,9 +205,12 @@ class FirebaseDataStore {
       ),
     );
 
-    // 6. Certificates Stream
+    // 6. Certificates Stream — scoped to current user if participant
+    final certQuery = (isStaff || userId.isEmpty)
+        ? _certificatesCol
+        : _certificatesCol.where('studentId', isEqualTo: userId);
     _firestoreSubscriptions.add(
-      _certificatesCol.snapshots().listen(
+      certQuery.snapshots().listen(
         (snapshot) {
           _certificates.clear();
           for (var doc in snapshot.docs) {
@@ -539,6 +550,20 @@ class FirebaseDataStore {
       'registeredCount': FieldValue.increment(1),
     });
 
+    // Optimistic in-memory update — don't wait for stream callback
+    // This immediately blocks re-registration and shows pass in UI
+    _registrations.insert(0, registration);
+    _registrationsStreamController.add(List.unmodifiable(_registrations));
+
+    // Update registeredCount on the cached event object
+    final eventIdx = _events.indexWhere((e) => e.id == event.id);
+    if (eventIdx != -1) {
+      _events[eventIdx] = _events[eventIdx].copyWith(
+        registeredCount: _events[eventIdx].registeredCount + 1,
+      );
+      _eventsStreamController.add(List.unmodifiable(_events));
+    }
+
     // Send confirmation in-app notification
     await addNotification(NotificationModel(
       id: 'notif_${_uuid.v4().substring(0, 8)}',
@@ -582,6 +607,24 @@ class FirebaseDataStore {
       await _eventsCol.doc(reg.eventId).update({
         'registeredCount': FieldValue.increment(-1),
       });
+    }
+
+    // Optimistic in-memory update
+    final regIdx = _registrations.indexWhere((r) => r.id == registrationId);
+    if (regIdx != -1) {
+      _registrations[regIdx] = _registrations[regIdx].copyWith(
+        status: RegistrationStatus.cancelled,
+      );
+      _registrationsStreamController.add(List.unmodifiable(_registrations));
+    }
+    if (reg.eventId.isNotEmpty) {
+      final eventIdx = _events.indexWhere((e) => e.id == reg.eventId);
+      if (eventIdx != -1) {
+        _events[eventIdx] = _events[eventIdx].copyWith(
+          registeredCount: (_events[eventIdx].registeredCount - 1).clamp(0, 99999),
+        );
+        _eventsStreamController.add(List.unmodifiable(_events));
+      }
     }
   }
 

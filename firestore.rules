@@ -44,9 +44,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Registrations Collection: Participants can create their own; Organizers/Admins can view & update status
+    // Registrations Collection: Participants can read/delete their own; Organizers/Admins can view & update status
     match /registrations/{registrationId} {
-      allow read: if isAuthenticated() && (isParticipant() || isOrganizer() || isAdmin());
+      allow read: if isAuthenticated() && (
+        (isParticipant() && request.auth.uid == resource.data.studentId) ||
+        isOrganizer() || isAdmin()
+      );
       allow create: if isParticipant();
       allow update: if isOrganizer() || isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.studentId);
       allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.studentId);

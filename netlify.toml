@@ -1,17 +1,8 @@
 [build]
-  command = """
-    git clone https://github.com/flutter/flutter.git --depth 1 --branch stable $HOME/flutter &&
-    export PATH="$PATH:$HOME/flutter/bin" &&
-    flutter config --enable-web &&
-    flutter pub get &&
-    flutter build web --release --web-renderer canvaskit
-  """
+  command = "bash build.sh"
   publish = "build/web"
 
-[build.environment]
-  FLUTTER_VERSION = "stable"
-
-# SPA redirect: all routes → index.html (needed for Flutter web routing)
+# SPA redirect: all routes → index.html (required for Flutter web routing)
 [[redirects]]
   from = "/*"
   to = "/index.html"

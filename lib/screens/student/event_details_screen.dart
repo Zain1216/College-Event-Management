@@ -8,6 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../../models/event_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/event_provider.dart';
 import '../../providers/registration_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_logo.dart';
@@ -172,12 +173,18 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final regProvider = context.watch<RegistrationProvider>();
+    final eventProvider = context.watch<EventProvider>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final user = auth.currentUser;
-    final isRegistered = user != null && regProvider.isUserRegistered(widget.event.id, user.uid);
-    final hasAttended = user != null && regProvider.hasUserAttended(widget.event.id, user.uid);
-    final formattedDate = DateFormat('EEEE, MMMM dd, yyyy').format(widget.event.date);
+    // Use live event from provider so registeredCount/isFull update instantly
+    final event = eventProvider.allEvents.firstWhere(
+      (e) => e.id == widget.event.id,
+      orElse: () => widget.event,
+    );
+    final isRegistered = user != null && regProvider.isUserRegistered(event.id, user.uid);
+    final hasAttended = user != null && regProvider.hasUserAttended(event.id, user.uid);
+    final formattedDate = DateFormat('EEEE, MMMM dd, yyyy').format(event.date);
 
     return AmbientGlassBackground(
       child: Scaffold(
@@ -386,7 +393,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                 style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800),
                               ),
                               Text(
-                                '${widget.event.registeredCount} / ${widget.event.maxParticipants} Registered',
+                                '${event.registeredCount} / ${event.maxParticipants} Registered',
                                 style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
                               ),
                             ],
@@ -395,11 +402,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(6),
                             child: LinearProgressIndicator(
-                              value: (widget.event.registeredCount / widget.event.maxParticipants).clamp(0.0, 1.0),
+                              value: (event.registeredCount / event.maxParticipants).clamp(0.0, 1.0),
                               minHeight: 8,
                               backgroundColor: AppColors.primaryContainer.withOpacity(0.5),
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                widget.event.isFull ? AppColors.error : AppColors.secondary,
+                                event.isFull ? AppColors.error : AppColors.secondary,
                               ),
                             ),
                           ),
@@ -610,14 +617,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         label: Text('Registered • View Pass in Tab', style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
                       )
                     : GlassButton(
-                        label: widget.event.isFull
+                        label: event.isFull
                             ? 'Event Full'
                             : (user?.role.key == 'visitor'
                                 ? 'Upgrade Profile & Register'
                                 : '1-Click Register for Event'),
                         icon: Icons.touch_app_rounded,
                         isLoading: _isRegistering,
-                        onPressed: (_isRegistering || widget.event.isFull)
+                        onPressed: (_isRegistering || event.isFull)
                             ? null
                             : () => _handleRegister(context),
                         height: 50,
