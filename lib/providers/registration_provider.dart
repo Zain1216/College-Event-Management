@@ -120,42 +120,40 @@ class RegistrationProvider extends ChangeNotifier {
     }
 
     // Match student from registrations
-    final reg = _registrations.firstWhere(
+    final matchingIndex = _registrations.indexWhere(
       (r) =>
           r.eventId == currentEventId &&
           (r.studentId == payload.studentId ||
               r.qrPassCode == payload.passCode ||
-              (payload.studentName.isNotEmpty && r.studentName.toLowerCase().contains(payload.studentName.toLowerCase()))),
-      orElse: () => RegistrationModel(
-        id: '',
-        eventId: '',
-        eventTitle: '',
-        eventDate: DateTime.now(),
-        eventTime: '',
-        studentId: '',
-        studentName: payload.studentName.isNotEmpty ? payload.studentName : 'Student',
-        studentEmail: '',
-        enrollmentNo: payload.enrollmentNo,
-        department: '',
-        registeredOn: DateTime.now(),
-        qrPassCode: '',
-      ),
+              (payload.enrollmentNo.isNotEmpty && r.enrollmentNo == payload.enrollmentNo) ||
+              (payload.studentName.isNotEmpty && r.studentName.toLowerCase() == payload.studentName.toLowerCase())),
     );
 
-    final sId = reg.studentId.isNotEmpty ? reg.studentId : (payload.studentId.isNotEmpty ? payload.studentId : 'usr_walkin');
-    final sName = reg.studentName.isNotEmpty ? reg.studentName : payload.studentName;
+    if (matchingIndex == -1) {
+      return 'No registration found for this student in this event.';
+    }
+
+    final reg = _registrations[matchingIndex];
+
+    if (reg.status == RegistrationStatus.cancelled) {
+      return 'This registration has been cancelled.';
+    }
+
+    if (reg.status == RegistrationStatus.attended) {
+      return 'Participant ${reg.studentName} is already checked in.';
+    }
 
     await _dataStore.checkInParticipant(
       eventId: currentEventId,
-      studentId: sId,
-      studentName: sName,
+      studentId: reg.studentId,
+      studentName: reg.studentName,
       enrollmentNo: reg.enrollmentNo,
       department: reg.department,
       verifiedByOrganizerId: organizerId,
       method: 'qr_scanner',
     );
 
-    return 'SUCCESS: Checked in ${sName} (${reg.enrollmentNo})';
+    return 'SUCCESS: Checked in ${reg.studentName} (${reg.enrollmentNo})';
   }
 
   /// Manual Check-in toggle

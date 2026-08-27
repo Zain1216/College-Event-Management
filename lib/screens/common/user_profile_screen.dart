@@ -1,13 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/event_provider.dart';
 import '../../providers/registration_provider.dart';
 import '../../providers/certificate_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/glass_widgets.dart';
 import '../../widgets/role_upgrade_dialog.dart';
-import '../auth/login_screen.dart';
 import '../sitemap/sitemap_screen.dart';
 import 'about_us_screen.dart';
 import 'contact_us_screen.dart';
@@ -32,52 +33,68 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Edit Profile Information'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Full Name'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: mobileController,
-                decoration: const InputDecoration(labelText: 'Mobile Number'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: deptController,
-                decoration: const InputDecoration(labelText: 'Department'),
-              ),
-              if (user.role == UserRole.participant) ...[
-                const SizedBox(height: 10),
-                TextField(
-                  controller: enrollmentController,
-                  decoration: const InputDecoration(labelText: 'Enrollment Number'),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 24,
+          blurSigma: 20,
+          padding: const EdgeInsets.all(22),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Edit Profile Information', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 16),
+                GlassTextField(
+                  controller: nameController,
+                  labelText: 'Full Name',
+                  prefixIcon: Icons.person_outline_rounded,
+                ),
+                const SizedBox(height: 12),
+                GlassTextField(
+                  controller: mobileController,
+                  labelText: 'Mobile Number',
+                  prefixIcon: Icons.phone_android_rounded,
+                ),
+                const SizedBox(height: 12),
+                GlassTextField(
+                  controller: deptController,
+                  labelText: 'Department',
+                  prefixIcon: Icons.domain_rounded,
+                ),
+                if (user.role == UserRole.participant) ...[
+                  const SizedBox(height: 12),
+                  GlassTextField(
+                    controller: enrollmentController,
+                    labelText: 'Enrollment Number',
+                    prefixIcon: Icons.badge_outlined,
+                  ),
+                ],
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await context.read<AuthProvider>().updateProfile(
+                              fullName: nameController.text.trim(),
+                              mobile: mobileController.text.trim(),
+                              department: deptController.text.trim(),
+                              enrollmentNo: enrollmentController.text.trim().isNotEmpty ? enrollmentController.text.trim() : null,
+                            );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Changes'),
+                    ),
+                  ],
                 ),
               ],
-            ],
+            ),
           ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              await context.read<AuthProvider>().updateProfile(
-                    fullName: nameController.text.trim(),
-                    mobile: mobileController.text.trim(),
-                    department: deptController.text.trim(),
-                    enrollmentNo: enrollmentController.text.trim().isNotEmpty ? enrollmentController.text.trim() : null,
-                  );
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('Save Changes'),
-          ),
-        ],
       ),
     );
   }
@@ -88,37 +105,69 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Change Password'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: oldPassController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Current Password'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: newPassController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'New Password (min 6 characters)'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(backgroundColor: AppColors.statusLive, content: Text('✅ Password changed successfully.')),
-              );
-            },
-            child: const Text('Update Password'),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 24,
+          blurSigma: 20,
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Change Password', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 16),
+              GlassTextField(
+                controller: oldPassController,
+                obscureText: true,
+                labelText: 'Current Password',
+                prefixIcon: Icons.lock_outline_rounded,
+              ),
+              const SizedBox(height: 12),
+              GlassTextField(
+                controller: newPassController,
+                obscureText: true,
+                labelText: 'New Password (min 6 characters)',
+                prefixIcon: Icons.lock_rounded,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final newPass = newPassController.text.trim();
+                      if (newPass.length < 6) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(backgroundColor: AppColors.error, content: Text('Password must be at least 6 characters.')),
+                        );
+                        return;
+                      }
+                      try {
+                        await context.read<AuthProvider>().changePassword(newPass);
+                        if (ctx.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(backgroundColor: AppColors.statusLive, content: Text('✅ Password updated successfully in Firebase Auth.')),
+                          );
+                        }
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(backgroundColor: AppColors.error, content: Text(e.toString().replaceAll('Exception: ', ''))),
+                          );
+                        }
+                      }
+                    },
+                    child: const Text('Update Password'),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -127,58 +176,73 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (user == null) {
-      return const Scaffold(body: Center(child: Text('No active user logged in.')));
+      return const Scaffold(backgroundColor: Colors.transparent, body: Center(child: Text('No active user logged in.')));
     }
 
     final regProvider = context.watch<RegistrationProvider>();
     final certProvider = context.watch<CertificateProvider>();
-    final eventProvider = context.watch<EventProvider>();
 
     final myRegistrations = regProvider.getRegistrationsForStudent(user.uid);
     final myCertificates = certProvider.getCertificatesForStudent(user.uid);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('My Profile & Settings'),
+        title: Text('My Profile & Settings', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
             tooltip: 'Edit Profile',
-            icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.6),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.8)),
+              ),
+              child: const Icon(Icons.edit_rounded, color: AppColors.primary, size: 18),
+            ),
             onPressed: () => _showEditProfileDialog(context, user),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 85),
         child: Column(
           children: [
-            // User Header Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.borderLight),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+            // User Header Glass Card
+            GlassContainer(
+              borderRadius: 26,
+              blurSigma: 18,
+              padding: const EdgeInsets.all(22),
               child: Column(
                 children: [
                   Stack(
+                    alignment: Alignment.center,
                     children: [
-                      CircleAvatar(
-                        radius: 46,
-                        backgroundColor: AppColors.primaryContainer,
-                        child: Text(
-                          user.fullName.isNotEmpty ? user.fullName.substring(0, 1).toUpperCase() : 'U',
-                          style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: AppColors.primary),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: AppColors.heroGradient,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.35),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 44,
+                          backgroundColor: Colors.white,
+                          child: Text(
+                            user.fullName.isNotEmpty ? user.fullName.substring(0, 1).toUpperCase() : 'U',
+                            style: GoogleFonts.outfit(fontSize: 36, fontWeight: FontWeight.w900, color: AppColors.primary),
+                          ),
                         ),
                       ),
                       Positioned(
@@ -191,9 +255,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             );
                           },
                           child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.cardGradient,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 15),
                           ),
                         ),
                       ),
@@ -202,127 +270,131 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   const SizedBox(height: 12),
                   Text(
                     user.fullName,
-                    style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: AppColors.deepNavy),
+                    style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppColors.deepNavy),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     user.email,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.12),
+                      color: AppColors.primary.withOpacity(0.14),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+                      border: Border.all(color: AppColors.primary.withOpacity(0.35)),
                     ),
                     child: Text(
                       user.role.displayName,
-                      style: const TextStyle(color: AppColors.primaryDark, fontSize: 11, fontWeight: FontWeight.w800),
+                      style: GoogleFonts.inter(color: AppColors.primaryDark, fontSize: 11, fontWeight: FontWeight.w800),
                     ),
                   ),
 
                   // Upgrade button if visitor
                   if (user.role == UserRole.visitor) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     ElevatedButton.icon(
                       onPressed: () => RoleUpgradeDialog.show(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.statusLive,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       ),
-                      icon: const Icon(Icons.upgrade, size: 16),
-                      label: const Text('Upgrade to Student Participant', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.upgrade_rounded, size: 18),
+                      label: Text(
+                        'Upgrade to Student Participant',
+                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800),
+                      ),
                     ),
                   ],
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Personal Credentials Summary (SRS 1.6 #11)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
+            // Personal Credentials Summary (Frosted Glass Card)
+            GlassContainer(
+              borderRadius: 22,
+              blurSigma: 14,
+              padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Personal Credentials', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.deepNavy)),
+                  Text(
+                    'Personal Credentials',
+                    style: GoogleFonts.outfit(fontSize: 14.5, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
+                  ),
                   const SizedBox(height: 12),
-                  _buildProfileRow(Icons.domain, 'Department', user.department),
-                  const Divider(height: 16, color: AppColors.borderLight),
-                  _buildProfileRow(Icons.phone_android, 'Mobile', user.mobile.isNotEmpty ? user.mobile : 'Not set'),
+                  _buildProfileRow(Icons.domain_rounded, 'Department', user.department),
+                  Divider(height: 18, color: isDark ? Colors.white12 : AppColors.borderLight),
+                  _buildProfileRow(Icons.phone_android_rounded, 'Mobile', user.mobile.isNotEmpty ? user.mobile : 'Not set'),
                   if (user.enrollmentNo != null) ...[
-                    const Divider(height: 16, color: AppColors.borderLight),
-                    _buildProfileRow(Icons.badge, 'Enrollment Number', user.enrollmentNo!),
+                    Divider(height: 18, color: isDark ? Colors.white12 : AppColors.borderLight),
+                    _buildProfileRow(Icons.badge_rounded, 'Enrollment Number', user.enrollmentNo!),
                   ],
                   if (user.collegeIdProof != null) ...[
-                    const Divider(height: 16, color: AppColors.borderLight),
-                    _buildProfileRow(Icons.verified_user, 'College ID Proof Status', 'Verified on File'),
+                    Divider(height: 18, color: isDark ? Colors.white12 : AppColors.borderLight),
+                    _buildProfileRow(Icons.verified_user_rounded, 'College ID Proof Status', 'Verified on File'),
                   ],
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Role Activities Overview (SRS 1.6 #11)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
+            // Role Activities Overview (Frosted Glass Card)
+            GlassContainer(
+              borderRadius: 22,
+              blurSigma: 14,
+              padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Activity & Engagement Stats', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.deepNavy)),
+                  Text(
+                    'Activity & Engagement Stats',
+                    style: GoogleFonts.outfit(fontSize: 14.5, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildActivityStat('Events Registered', '${myRegistrations.length}', AppColors.primary),
+                      _buildActivityStat('Events', '${myRegistrations.length}', AppColors.primary),
                       const SizedBox(width: 8),
-                      _buildActivityStat('Certificates', '${myCertificates.length}', AppColors.accentGold),
+                      _buildActivityStat('Certs', '${myCertificates.length}', AppColors.accentGold),
                       const SizedBox(width: 8),
-                      _buildActivityStat('Bookmarks', '${user.bookmarkedEventIds.length}', AppColors.secondaryDark),
+                      _buildActivityStat('Saved', '${user.bookmarkedEventIds.length}', AppColors.secondaryDark),
                     ],
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Notification Preferences (SRS 1.6 #10 & #11)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
+            // Notification Preferences (Frosted Glass Card)
+            GlassContainer(
+              borderRadius: 22,
+              blurSigma: 14,
+              padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Notification Preferences', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.deepNavy)),
+                  Text(
+                    'Notification Preferences',
+                    style: GoogleFonts.outfit(fontSize: 14.5, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
+                  ),
                   const SizedBox(height: 8),
                   SwitchListTile(
-                    title: const Text('Event Schedule Reminders', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('Receive alerts 1 hour before registered events', style: TextStyle(fontSize: 11)),
+                    title: Text('Event Schedule Reminders', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+                    subtitle: Text('Receive alerts 1 hour before registered events', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
                     value: _eventReminders,
                     activeColor: AppColors.primary,
                     onChanged: (val) => setState(() => _eventReminders = val),
                     contentPadding: EdgeInsets.zero,
                   ),
                   SwitchListTile(
-                    title: const Text('Push Announcements', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('Live organizer updates & results', style: TextStyle(fontSize: 11)),
+                    title: Text('Push Announcements', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+                    subtitle: Text('Live organizer updates & results', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
                     value: _pushNotifs,
                     activeColor: AppColors.primary,
                     onChanged: (val) => setState(() => _pushNotifs = val),
@@ -332,42 +404,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // Quick App Links (Sitemap, About Us, Contact Us)
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
+            GlassContainer(
+              borderRadius: 22,
+              blurSigma: 14,
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Column(
                 children: [
                   ListTile(
                     leading: const Icon(Icons.account_tree_outlined, color: AppColors.primary),
-                    title: const Text('App Flowchart & Sitemap', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    title: Text('App Flowchart & Sitemap', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+                    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SitemapScreen())),
                   ),
-                  const Divider(height: 1, color: AppColors.borderLight),
+                  Divider(height: 1, color: isDark ? Colors.white12 : AppColors.borderLight),
                   ListTile(
-                    leading: const Icon(Icons.info_outline, color: AppColors.secondaryDark),
-                    title: const Text('About FusionFiesta & TechWiz Team', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    leading: const Icon(Icons.info_outline_rounded, color: AppColors.secondaryDark),
+                    title: Text('About FusionFiesta & Team', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+                    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsScreen())),
                   ),
-                  const Divider(height: 1, color: AppColors.borderLight),
+                  Divider(height: 1, color: isDark ? Colors.white12 : AppColors.borderLight),
                   ListTile(
                     leading: const Icon(Icons.contact_support_outlined, color: AppColors.accentOrange),
-                    title: const Text('Contact Support & FAQs', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    title: Text('Contact Support & FAQs', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+                    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactUsScreen())),
                   ),
-                  const Divider(height: 1, color: AppColors.borderLight),
+                  Divider(height: 1, color: isDark ? Colors.white12 : AppColors.borderLight),
                   ListTile(
-                    leading: const Icon(Icons.lock_outline, color: AppColors.deepNavy),
-                    title: const Text('Change Password', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    leading: const Icon(Icons.lock_outline_rounded, color: AppColors.deepNavy),
+                    title: Text('Change Password', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+                    trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                     onTap: () => _showChangePasswordDialog(context),
                   ),
                 ],
@@ -386,10 +456,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.error,
-                  side: const BorderSide(color: AppColors.error),
+                  side: const BorderSide(color: AppColors.error, width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                icon: const Icon(Icons.logout, size: 18),
-                label: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800)),
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: Text('Sign Out', style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
               ),
             ),
 
@@ -403,13 +474,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget _buildProfileRow(IconData icon, String label, String val) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.primary),
-        const SizedBox(width: 10),
+        Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: AppColors.primary),
+        ),
+        const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textSecondaryLight)),
-            Text(val, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            Text(label, style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondaryLight)),
+            Text(val, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
           ],
         ),
       ],
@@ -419,17 +497,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget _buildActivityStat(String label, String value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.25)),
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: color)),
+            Text(value, style: GoogleFonts.outfit(fontSize: 19, fontWeight: FontWeight.w900, color: color)),
             const SizedBox(height: 2),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, color: AppColors.textSecondaryLight, fontWeight: FontWeight.w600)),
+            Text(label, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondaryLight, fontWeight: FontWeight.w700)),
           ],
         ),
       ),

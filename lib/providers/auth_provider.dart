@@ -1,30 +1,30 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
+import '../models/notification_model.dart';
 import '../services/firebase_datastore.dart';
-import '../services/firebase_config.dart';
 
 class AuthProvider extends ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseDataStore _dataStore = FirebaseDataStore();
 
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
-  String? _passwordResetToken;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  String? get passwordResetToken => _passwordResetToken;
 
-  bool get isAuthenticated => _currentUser != null;
+  bool get isAuthenticated => _currentUser != null && _auth.currentUser != null;
   UserRole get currentRole => _currentUser?.role ?? UserRole.visitor;
   bool get isVisitor => _currentUser?.role == UserRole.visitor;
   bool get isParticipant => _currentUser?.role == UserRole.participant;
   bool get isOrganizer => _currentUser?.role == UserRole.organizer;
   bool get isAdmin => _currentUser?.role == UserRole.admin;
 
+  StreamSubscription<User?>? _authStateSub;
   StreamSubscription? _usersSub;
 
   AuthProvider() {
@@ -37,7 +37,7 @@ class AuthProvider extends ChangeNotifier {
 
     await _dataStore.initialize();
 
-    // Listen to user updates in Firestore
+    // Listen to user collection updates in Firestore to keep currentUser in sync
     _usersSub = _dataStore.usersStream.listen((users) {
       if (_currentUser != null) {
         try {
@@ -48,80 +48,90 @@ class AuthProvider extends ChangeNotifier {
       }
     });
 
-    final prefs = await SharedPreferences.getInstance();
-    final savedUid = prefs.getString('auth_user_uid');
-
-    if (savedUid != null) {
-      _currentUser = _dataStore.findUserById(savedUid);
-    }
-
-    // Default to Student Participant demo user on first launch if not logged in
-    if (_currentUser == null) {
-      _currentUser = _dataStore.findUserByEmail('student@fusionfiesta.edu');
-      if (_currentUser != null) {
-        await prefs.setString('auth_user_uid', _currentUser!.uid);
+    // Listen to real Firebase Authentication state changes
+    _authStateSub = _auth.authStateChanges().listen((User? firebaseUser) async {
+      if (firebaseUser == null) {
+        _currentUser = null;
+        _isLoading = false;
+        notifyListeners();
+      } else {
+        await _loadUserProfile(firebaseUser.uid);
       }
-    }
+    });
+  }
 
+  Future<void> _loadUserProfile(String uid) async {
+    try {
+      final user = await _dataStore.getUserById(uid);
+      if (user != null) {
+        _currentUser = user;
+      }
+    } catch (_) {}
     _isLoading = false;
     notifyListeners();
   }
 
   @override
   void dispose() {
+    _authStateSub?.cancel();
     _usersSub?.cancel();
     super.dispose();
   }
 
-  /// Sign In with Email & Password
+  /// Real Firebase Email & Password Sign In
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 300)); // Smooth UX transition
+    try {
+      final cred = await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
 
-    final user = _dataStore.findUserByEmail(email);
+      final uid = cred.user!.uid;
+      final user = await _dataStore.getUserById(uid);
 
-    if (user == null) {
-      _errorMessage = 'No user found with email $email.';
+      if (user != null) {
+        if (!user.isActive) {
+          await _auth.signOut();
+          _currentUser = null;
+          _errorMessage = 'This account has been deactivated by an administrator.';
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        }
+
+        if ((user.role == UserRole.organizer || user.role == UserRole.admin) && !user.isApproved) {
+          await _auth.signOut();
+          _currentUser = null;
+          _errorMessage = 'Staff account is pending administrative approval.';
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        }
+
+        _currentUser = user;
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _parseAuthError(e);
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
       notifyListeners();
       return false;
     }
-
-    if (!user.isActive) {
-      _errorMessage = 'This account has been deactivated by administrator.';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-    if ((user.role == UserRole.organizer || user.role == UserRole.admin) && !user.isApproved) {
-      _errorMessage = 'Staff account is pending administrative approval.';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-    _currentUser = user;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_user_uid', user.uid);
-
-    _isLoading = false;
-    notifyListeners();
-    return true;
   }
 
-  /// Quick 1-Tap Demo Switcher for fast evaluation across all 4 roles
-  Future<void> switchDemoRole(String roleKey) async {
-    final creds = FirebaseConfig.demoCredentials[roleKey.toLowerCase()];
-    if (creds != null) {
-      await login(creds['email']!, creds['password']!);
-    }
-  }
-
-  /// Register new user account
+  /// Real Firebase Account Registration
   Future<bool> register({
     required String email,
     required String password,
@@ -137,25 +147,56 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final newUser = await _dataStore.registerUser(
-        email: email,
-        fullName: fullName,
+      final cred = await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
+
+      final isStaff = role == UserRole.organizer || role == UserRole.admin;
+      final newUser = UserModel(
+        uid: cred.user!.uid,
+        email: email.trim().toLowerCase(),
+        fullName: fullName.trim(),
         role: role,
         department: department,
         mobile: mobile,
         enrollmentNo: enrollmentNo,
         collegeIdProof: collegeIdProof,
+        profilePicUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+        isApproved: !isStaff, // Staff must be approved by admin (SRS 1.6 #1)
+        isActive: true,
+        createdAt: DateTime.now(),
       );
 
-      if (newUser.isApproved) {
+      await _dataStore.saveUser(newUser);
+
+      if (isStaff) {
+        // Send notification to Admin role
+        await _dataStore.addNotification(NotificationModel(
+          id: 'notif_${DateTime.now().millisecondsSinceEpoch}',
+          recipientId: 'role:admin',
+          recipientRole: 'admin',
+          title: 'New Staff Registration Pending',
+          message: '${newUser.fullName} (${newUser.email}) registered as ${newUser.role.displayName}. Awaiting admin approval.',
+          type: NotificationType.eventApproval,
+          createdAt: DateTime.now(),
+        ));
+
+        // Sign out unapproved staff so they must wait for admin verification
+        await _auth.signOut();
+        _currentUser = null;
+      } else {
         _currentUser = newUser;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_user_uid', newUser.uid);
       }
 
       _isLoading = false;
       notifyListeners();
       return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _parseAuthError(e);
+      _isLoading = false;
+      notifyListeners();
+      return false;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
@@ -215,31 +256,23 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Request Forgot Password Token (SRS 1.6 #1)
+  /// Request Real Firebase Password Reset Email
   Future<String> requestPasswordReset(String email) async {
-    final user = _dataStore.findUserByEmail(email);
-    if (user == null) {
-      throw Exception('No registered account found with that email address.');
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return 'A secure password reset link has been sent to $email. Please check your inbox.';
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_parseAuthError(e));
     }
-
-    final token = 'FF-RESET-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-    _passwordResetToken = token;
-    notifyListeners();
-    return token;
   }
 
-  /// Complete Password Reset
-  Future<bool> resetPasswordWithToken({
-    required String email,
-    required String token,
-    required String newPassword,
-  }) async {
-    if (_passwordResetToken != null && _passwordResetToken == token.trim()) {
-      _passwordResetToken = null;
-      notifyListeners();
-      return true;
+  /// Real Password Update
+  Future<void> changePassword(String newPassword) async {
+    try {
+      await _auth.currentUser?.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_parseAuthError(e));
     }
-    throw Exception('Invalid or expired reset token.');
   }
 
   /// Bookmark toggle
@@ -248,11 +281,35 @@ class AuthProvider extends ChangeNotifier {
     await _dataStore.toggleBookmark(_currentUser!.uid, eventId);
   }
 
-  /// Sign Out
+  /// Real Firebase Sign Out
   Future<void> logout() async {
+    await _auth.signOut();
     _currentUser = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_user_uid');
     notifyListeners();
+  }
+
+  static String _parseAuthError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return 'No user found with that email address.';
+      case 'wrong-password':
+        return 'Incorrect password entered.';
+      case 'invalid-credential':
+        return 'Invalid email or password.';
+      case 'email-already-in-use':
+        return 'An account already exists with this email.';
+      case 'invalid-email':
+        return 'Please enter a valid email address.';
+      case 'weak-password':
+        return 'Password must be at least 6 characters.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many failed attempts. Please wait a moment and try again.';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      default:
+        return e.message ?? 'Authentication error occurred.';
+    }
   }
 }

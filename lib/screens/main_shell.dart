@@ -149,4 +149,83 @@ class _MainShellState extends State<MainShell> {
                     color: isDark
                         ? const Color(0xFF0F172A).withOpacity(0.75)
                         : Colors.white.withOpacity(0.82),
-                    borderRadius: BorderRadius.
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.18)
+                          : Colors.white.withOpacity(0.90),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: List.generate(navItems.length, (index) {
+                      final item = navItems[index];
+                      final isSelected = _currentIndex == index;
+
+                      return Expanded(
+                        child: InkWell(
+                          onTap: () => setState(() => _currentIndex = index),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Center(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 220),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: isSelected
+                                  ? BoxDecoration(
+                                      color: AppColors.primary.withOpacity(0.14),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: AppColors.primary.withOpacity(0.35),
+                                        width: 1.2,
+                                      ),
+                                    )
+                                  : null,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isSelected ? item.activeIcon : item.icon,
+                                    size: isSelected ? 22 : 20,
+                                    color: isSelected ? AppColors.primary : AppColors.textSecondaryLight,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    item.label,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                      color: isSelected ? AppColors.primary : AppColors.textSecondaryLight,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassNavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  const _GlassNavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
+}

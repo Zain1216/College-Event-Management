@@ -97,6 +97,8 @@ class MediaModel {
       'likedByUserIds': likedByUserIds,
       'uploadedOn': uploadedOn.toIso8601String(),
     };
+  }
+
   static DateTime _parseDate(dynamic val) {
     if (val == null) return DateTime.now();
     if (val is DateTime) return val;

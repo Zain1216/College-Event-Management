@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../models/contact_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/glass_widgets.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -101,148 +103,147 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Contact Support & FAQs'),
+        title: Text('Contact Support & FAQs', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 85),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Contact Support Form Card (SRS 1.6 #12)
-            Container(
+            // Contact Support Glass Card (SRS 1.6 #12)
+            GlassContainer(
+              borderRadius: 24,
+              blurSigma: 16,
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.borderLight),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.mail_outline, color: AppColors.primary, size: 24),
-                        SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.heroGradient,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.mail_outline_rounded, color: Colors.white, size: 22),
+                        ),
+                        const SizedBox(width: 12),
                         Text(
                           'Submit an Inquiry to Admin',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+                          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
 
                     // Name
-                    TextFormField(
+                    GlassTextField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Your Name *',
-                        prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
-                      ),
+                      labelText: 'Your Name *',
+                      prefixIcon: Icons.person_outline_rounded,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
                     ),
                     const SizedBox(height: 12),
 
                     // Email
-                    TextFormField(
+                    GlassTextField(
                       controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email Address *',
-                        prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
-                      ),
+                      labelText: 'Email Address *',
+                      prefixIcon: Icons.email_outlined,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Email is required' : null,
                     ),
                     const SizedBox(height: 12),
 
                     // Category
-                    DropdownButtonFormField<String>(
-                      value: _category,
-                      decoration: const InputDecoration(
-                        labelText: 'Inquiry Category',
-                        prefixIcon: Icon(Icons.category_outlined, color: AppColors.primary),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.72),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
                       ),
-                      items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 13)))).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _category = val);
-                      },
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButtonFormField<String>(
+                          value: _category,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            labelText: 'Inquiry Category',
+                            prefixIcon: Icon(Icons.category_outlined, color: AppColors.primary),
+                          ),
+                          items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)))).toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _category = val);
+                          },
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
 
                     // Subject
-                    TextFormField(
+                    GlassTextField(
                       controller: _subjectController,
-                      decoration: const InputDecoration(
-                        labelText: 'Subject Headline *',
-                        prefixIcon: Icon(Icons.title, color: AppColors.primary),
-                      ),
+                      labelText: 'Subject Headline *',
+                      prefixIcon: Icons.title_rounded,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Subject is required' : null,
                     ),
                     const SizedBox(height: 12),
 
                     // Message
-                    TextFormField(
+                    GlassTextField(
                       controller: _messageController,
                       maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Message & Details *',
-                        hintText: 'Please describe your question or technical issue...',
-                      ),
+                      labelText: 'Message & Details *',
+                      hintText: 'Please describe your question or technical issue...',
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Message is required' : null,
                     ),
                     const SizedBox(height: 18),
 
-                    SizedBox(
-                      width: double.infinity,
+                    GlassButton(
+                      label: 'Send Message to Admin',
+                      icon: Icons.send_rounded,
+                      isLoading: _isSubmitting,
+                      onPressed: _isSubmitting ? null : _submitQuery,
                       height: 48,
-                      child: ElevatedButton.icon(
-                        onPressed: _isSubmitting ? null : _submitQuery,
-                        icon: _isSubmitting
-                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Icon(Icons.send),
-                        label: const Text('Send Message to Admin', style: TextStyle(fontWeight: FontWeight.w800)),
-                      ),
                     ),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             // FAQs Accordion Section (SRS 1.6 #12)
-            const Text(
+            Text(
               'Frequently Asked Questions (FAQs)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
             ),
             const SizedBox(height: 12),
 
-            ..._faqs.map((faq) => Container(
+            ..._faqs.map((faq) => GlassContainer(
+                  borderRadius: 18,
+                  blurSigma: 12,
                   margin: const EdgeInsets.only(bottom: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.borderLight),
-                  ),
+                  padding: EdgeInsets.zero,
                   child: ExpansionTile(
+                    shape: const Border(),
+                    collapsedShape: const Border(),
                     title: Text(
                       faq.question,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textPrimaryLight),
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13, color: isDark ? Colors.white : AppColors.textPrimaryLight),
                     ),
                     childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     children: [
                       Text(
                         faq.answer,
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight, height: 1.4),
+                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight, height: 1.45),
                       ),
                     ],
                   ),

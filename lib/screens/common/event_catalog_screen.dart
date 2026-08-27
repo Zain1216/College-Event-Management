@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../models/event_model.dart';
 import '../../providers/event_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/event_card.dart';
+import '../../widgets/glass_widgets.dart';
 import '../student/event_details_screen.dart';
 
 class EventCatalogScreen extends StatefulWidget {
@@ -28,60 +30,57 @@ class _EventCatalogScreenState extends State<EventCatalogScreen> {
     final eventProvider = context.watch<EventProvider>();
     final events = eventProvider.publicEvents;
     final suggestions = eventProvider.getSearchSuggestions(_searchController.text);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Event Catalog & Discovery'),
+        title: Text('Event Catalog & Discovery', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
       ),
       body: Column(
         children: [
-          // Search & Filter Toolbar
+          // Frosted Glass Search & Filter Toolbar
           Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Column(
               children: [
                 // Global Search Bar with Auto-Suggestions (SRS 1.6 #3 & #10)
-                TextField(
+                GlassTextField(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search by event name, department, or #tags...',
-                    prefixIcon: const Icon(Icons.search, color: AppColors.primary),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              eventProvider.setSearchQuery('');
-                            },
-                          )
-                        : null,
-                  ),
+                  hintText: 'Search by event name, department, or #tags...',
+                  prefixIcon: Icons.search_rounded,
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            eventProvider.setSearchQuery('');
+                          },
+                        )
+                      : null,
                   onChanged: (val) => eventProvider.setSearchQuery(val),
                 ),
 
                 // Auto Suggestions Dropdown Preview
                 if (suggestions.isNotEmpty && _searchController.text.trim().isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
+                  GlassContainer(
+                    borderRadius: 14,
+                    padding: const EdgeInsets.all(4),
                     child: Column(
                       children: suggestions.map((s) => InkWell(
                             onTap: () {
                               _searchController.text = s.replaceAll('#', '');
                               eventProvider.setSearchQuery(s.replaceAll('#', ''));
                             },
+                            borderRadius: BorderRadius.circular(10),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.history, size: 14, color: AppColors.textSecondaryLight),
+                                  const Icon(Icons.history_rounded, size: 15, color: AppColors.primary),
                                   const SizedBox(width: 8),
-                                  Text(s, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                                  Text(s, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),
@@ -92,7 +91,7 @@ class _EventCatalogScreenState extends State<EventCatalogScreen> {
 
                 const SizedBox(height: 12),
 
-                // Category Chips
+                // Horizontal Glass Category Chips
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -100,16 +99,39 @@ class _EventCatalogScreenState extends State<EventCatalogScreen> {
                       final isSelected = eventProvider.selectedCategory.toLowerCase() == cat.toLowerCase();
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(cat),
-                          selected: isSelected,
-                          selectedColor: AppColors.primaryContainer,
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                            color: isSelected ? AppColors.primaryDark : AppColors.textPrimaryLight,
+                        child: InkWell(
+                          onTap: () => eventProvider.setCategory(cat),
+                          borderRadius: BorderRadius.circular(20),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: isSelected ? AppColors.heroGradient : null,
+                              color: isSelected ? null : Colors.white.withOpacity(0.65),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? Colors.white.withOpacity(0.6) : Colors.white.withOpacity(0.8),
+                                width: 1.2,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.primary.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Text(
+                              cat,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                color: isSelected ? Colors.white : AppColors.textPrimaryLight,
+                              ),
+                            ),
                           ),
-                          onSelected: (val) => eventProvider.setCategory(cat),
                         ),
                       );
                     }).toList(),
@@ -118,30 +140,39 @@ class _EventCatalogScreenState extends State<EventCatalogScreen> {
 
                 const SizedBox(height: 10),
 
-                // Sort Dropdown & Reset Row
+                // Sort Dropdown & Count Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Showing ${events.length} Events',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryLight),
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryLight),
                     ),
                     Row(
                       children: [
-                        const Text('Sort: ', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryLight)),
-                        DropdownButton<EventSortBy>(
-                          value: eventProvider.sortBy,
-                          underline: const SizedBox(),
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
-                          items: const [
-                            DropdownMenuItem(value: EventSortBy.dateUpcoming, child: Text('Upcoming Date')),
-                            DropdownMenuItem(value: EventSortBy.newest, child: Text('Newest Added')),
-                            DropdownMenuItem(value: EventSortBy.mostPopular, child: Text('Most Popular')),
-                            DropdownMenuItem(value: EventSortBy.topRated, child: Text('Top Rated ★')),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) eventProvider.setSortBy(val);
-                          },
+                        Text('Sort: ', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withOpacity(0.8)),
+                          ),
+                          child: DropdownButton<EventSortBy>(
+                            value: eventProvider.sortBy,
+                            underline: const SizedBox(),
+                            icon: const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
+                            items: const [
+                              DropdownMenuItem(value: EventSortBy.dateUpcoming, child: Text('Upcoming Date')),
+                              DropdownMenuItem(value: EventSortBy.newest, child: Text('Newest Added')),
+                              DropdownMenuItem(value: EventSortBy.mostPopular, child: Text('Most Popular')),
+                              DropdownMenuItem(value: EventSortBy.topRated, child: Text('Top Rated ★')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) eventProvider.setSortBy(val);
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -151,42 +182,45 @@ class _EventCatalogScreenState extends State<EventCatalogScreen> {
             ),
           ),
 
-          const Divider(height: 1, color: AppColors.borderLight),
-
           // Events List
           Expanded(
             child: events.isEmpty
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.event_busy, size: 54, color: AppColors.textMutedLight),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No events found',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'Try clearing search filters or changing the event category.',
-                            style: TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
-                          ),
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: () {
-                              _searchController.clear();
-                              eventProvider.resetFilters();
-                            },
-                            child: const Text('Reset All Filters'),
-                          ),
-                        ],
+                      child: GlassContainer(
+                        borderRadius: 24,
+                        padding: const EdgeInsets.all(28),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.event_busy_rounded, size: 54, color: AppColors.textMutedLight),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No events found',
+                              style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Try clearing search filters or changing the event category.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
+                            ),
+                            const SizedBox(height: 14),
+                            ElevatedButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                eventProvider.resetFilters();
+                              },
+                              child: const Text('Reset All Filters'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 85),
                     itemCount: events.length,
                     itemBuilder: (context, index) {
                       final event = events[index];

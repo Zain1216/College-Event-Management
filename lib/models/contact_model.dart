@@ -35,6 +35,17 @@ class ContactQueryModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? DateTime.now();
+  }
+
   factory ContactQueryModel.fromMap(Map<String, dynamic> map) {
     return ContactQueryModel(
       id: map['id'] as String? ?? '',
@@ -45,9 +56,7 @@ class ContactQueryModel {
       message: map['message'] as String? ?? '',
       isResolved: map['isResolved'] as bool? ?? false,
       adminReply: map['adminReply'] as String?,
-      submittedOn: map['submittedOn'] != null
-          ? DateTime.tryParse(map['submittedOn'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      submittedOn: _parseDate(map['submittedOn']),
     );
   }
 }

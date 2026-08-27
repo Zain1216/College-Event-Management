@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
+import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'services/firebase_datastore.dart';
 import 'providers/auth_provider.dart';
@@ -34,7 +36,10 @@ void main() async {
     ),
   );
 
-  // Initialize Pure Firebase DataStore & Firestore Cache
+  // Initialize Firebase Core & Live Cloud Firestore DataStore
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await FirebaseDataStore().initialize();
 
   runApp(const FusionFiestaApp());

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
 import '../../providers/admin_provider.dart';
-import '../../providers/event_provider.dart';
-import '../../services/report_export_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/glass_widgets.dart';
 
 class ReportCenterScreen extends StatefulWidget {
   const ReportCenterScreen({super.key});
@@ -39,7 +37,6 @@ class _ReportCenterScreenState extends State<ReportCenterScreen> {
     final adminProvider = context.read<AdminProvider>();
     final excelBytes = adminProvider.exportExcelReport();
 
-    // Trigger download/save notification
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppColors.statusLive,
@@ -50,38 +47,55 @@ class _ReportCenterScreenState extends State<ReportCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Administrative Report Center'),
+        title: Text('Administrative Report Center', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 85),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Banner
+            // Header Glass Banner
             Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: AppColors.heroGradient,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.35),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.analytics_outlined, color: Colors.white, size: 36),
-                  SizedBox(width: 14),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 32),
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'On-Demand Executive Reporting',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
-                          'Generate complete audit records, event participation statistics, certificates log, and multi-criteria feedback scores in PDF and Excel formats (SRS Section 1.6 #7).',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                          'Generate complete audit records, event participation statistics, and feedback scores in PDF and Excel formats (SRS Section 1.6 #7).',
+                          style: GoogleFonts.inter(color: Colors.white.withOpacity(0.85), fontSize: 11.5),
                         ),
                       ],
                     ),
@@ -90,79 +104,86 @@ class _ReportCenterScreenState extends State<ReportCenterScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
             // Department Scope Filter
-            Container(
+            GlassContainer(
+              borderRadius: 20,
+              blurSigma: 14,
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Select Department Scope for Report', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                  Text('Select Department Scope for Report', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: _selectedDepartment,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.domain, color: AppColors.primary),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.72),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
                     ),
-                    items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12)))).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedDepartment = val);
-                    },
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedDepartment,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          prefixIcon: Icon(Icons.domain_rounded, color: AppColors.primary),
+                        ),
+                        items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)))).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedDepartment = val);
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
 
             // Export Formats Section
-            const Text(
+            Text(
               'Available Export Formats',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
             ),
             const SizedBox(height: 12),
 
             // PDF Option
-            Container(
+            GlassContainer(
+              borderRadius: 20,
+              blurSigma: 14,
+              glowColor: AppColors.error,
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.error.withOpacity(0.14),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.picture_as_pdf, color: AppColors.error, size: 28),
+                    child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.error, size: 28),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Executive PDF Report Document', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
-                        Text('Print-ready analytics with summary metrics, events table, attendee logs, and rating highlights.', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
+                        Text('Executive PDF Report Document', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 14)),
+                        Text('Print-ready analytics with summary metrics, events table, and attendee logs.', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: _isExporting ? null : _exportPdf,
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                     icon: _isExporting
                         ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(Icons.download, size: 16),
-                    label: const Text('Export PDF', style: TextStyle(fontSize: 12)),
+                        : const Icon(Icons.download_rounded, size: 16),
+                    label: const Text('Export PDF', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                   ),
                 ],
               ),
@@ -171,38 +192,37 @@ class _ReportCenterScreenState extends State<ReportCenterScreen> {
             const SizedBox(height: 12),
 
             // Excel Option
-            Container(
+            GlassContainer(
+              borderRadius: 20,
+              blurSigma: 14,
+              glowColor: AppColors.statusLive,
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.statusLive.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.statusLive.withOpacity(0.14),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.table_chart, color: AppColors.statusLive, size: 28),
+                    child: const Icon(Icons.table_chart_rounded, color: AppColors.statusLive, size: 28),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Excel Spreadsheet (.xlsx Workbook)', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
-                        Text('Multi-sheet workbook containing Events, Registrations, Issued Certificates, and Feedback Analysis data.', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
+                        Text('Excel Spreadsheet (.xlsx)', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 14)),
+                        Text('Multi-sheet workbook containing Events, Registrations, and Certificates data.', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: _exportExcel,
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusLive),
-                    icon: const Icon(Icons.file_download, size: 16),
-                    label: const Text('Export Excel', style: TextStyle(fontSize: 12)),
+                    icon: const Icon(Icons.file_download_rounded, size: 16),
+                    label: const Text('Export Excel', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                   ),
                 ],
               ),

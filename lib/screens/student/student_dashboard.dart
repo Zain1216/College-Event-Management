@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/event_model.dart';
@@ -11,6 +13,7 @@ import '../../providers/notification_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/event_card.dart';
+import '../../widgets/glass_widgets.dart';
 import '../../widgets/role_upgrade_dialog.dart';
 import '../../widgets/notification_sheet.dart';
 import '../sitemap/sitemap_screen.dart';
@@ -38,6 +41,7 @@ class StudentDashboard extends StatelessWidget {
     final regProvider = context.watch<RegistrationProvider>();
     final certProvider = context.watch<CertificateProvider>();
     final notifProvider = context.watch<NotificationProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final user = auth.currentUser;
     final isVisitor = user?.role == UserRole.visitor;
@@ -58,34 +62,54 @@ class StudentDashboard extends StatelessWidget {
         : [];
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const AppLogo(size: 34),
         actions: [
           IconButton(
             tooltip: 'App Sitemap & Flow',
-            icon: const Icon(Icons.account_tree_outlined, color: AppColors.primary),
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.6),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.8)),
+              ),
+              child: const Icon(Icons.account_tree_outlined, color: AppColors.primary, size: 20),
+            ),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SitemapScreen())),
           ),
           Stack(
             children: [
               IconButton(
                 tooltip: 'Notifications',
-                icon: const Icon(Icons.notifications_outlined, color: AppColors.primary),
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.8)),
+                  ),
+                  child: const Icon(Icons.notifications_outlined, color: AppColors.primary, size: 20),
+                ),
                 onPressed: () => NotificationSheet.show(context),
               ),
               if (unreadNotifs > 0)
                 Positioned(
                   right: 8,
-                  top: 8,
+                  top: 6,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.error,
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: AppColors.error.withOpacity(0.4), blurRadius: 6),
+                      ],
                     ),
                     child: Text(
                       '$unreadNotifs',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -97,80 +121,123 @@ class StudentDashboard extends StatelessWidget {
       body: RefreshIndicator(
         onRefresh: () async => await Future.delayed(const Duration(milliseconds: 400)),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 85),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hero Welcome Card
+              // Glowing Glass Hero Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: AppColors.heroGradient,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+                      color: AppColors.primary.withOpacity(0.32),
+                      blurRadius: 22,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Welcome back, ${user?.fullName.split(' ').first ?? 'Student'}! 👋',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                          ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(26),
+                  child: Stack(
+                    children: [
+                      // Gradient Background
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: const BoxDecoration(
+                          gradient: AppColors.heroGradient,
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Welcome back, ${user?.fullName.split(' ').first ?? 'Student'}! 👋',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.22),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.2),
+                                  ),
+                                  child: Text(
+                                    user?.role.displayName ?? 'Student',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              isVisitor
+                                  ? 'Browse technical fests, cultural concerts, and robotics championships. Upgrade to 1-click register!'
+                                  : 'You currently have ${myRegistrations.length} active registered event passes and ${certProvider.getCertificatesForStudent(user!.uid).length} verifiable certificates.',
+                              style: GoogleFonts.inter(
+                                color: Colors.white.withOpacity(0.92),
+                                fontSize: 13,
+                                height: 1.4,
+                              ),
+                            ),
+                            if (isVisitor) ...[
+                              const SizedBox(height: 14),
+                              ElevatedButton.icon(
+                                onPressed: () => RoleUpgradeDialog.show(context),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: AppColors.primary,
+                                  elevation: 2,
+                                  shadowColor: Colors.black26,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                icon: const Icon(Icons.upgrade_rounded, size: 18),
+                                label: Text(
+                                  'Upgrade to Student Participant',
+                                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      // Light shimmer accent on top edge
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 1.5,
+                        child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            user?.role.displayName ?? 'Student',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.7),
+                                Colors.white.withOpacity(0.1),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isVisitor
-                          ? 'Browse tech fests, cultural band wars, and sports. Upgrade to 1-click register!'
-                          : 'You have ${myRegistrations.length} active registered event passes and ${certProvider.getCertificatesForStudent(user!.uid).length} certificates.',
-                      style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13),
-                    ),
-                    if (isVisitor) ...[
-                      const SizedBox(height: 14),
-                      ElevatedButton.icon(
-                        onPressed: () => RoleUpgradeDialog.show(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
-                        ),
-                        icon: const Icon(Icons.upgrade, size: 18),
-                        label: const Text('Upgrade to Student Participant', style: TextStyle(fontWeight: FontWeight.w800)),
                       ),
                     ],
-                  ],
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
               // Quick Action Shortcuts Grid (SRS 1.6 #2)
               Row(
@@ -178,41 +245,41 @@ class StudentDashboard extends StatelessWidget {
                   _buildQuickActionTile(
                     context,
                     title: 'Digital Passes',
-                    subtitle: '${myRegistrations.length} Passes',
-                    icon: Icons.qr_code_2,
+                    subtitle: '${myRegistrations.length} Active',
+                    icon: Icons.qr_code_2_rounded,
                     color: AppColors.primary,
                     onTap: onNavigateToTickets ??
                         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyTicketsScreen())),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   _buildQuickActionTile(
                     context,
                     title: 'E-Certificates',
                     subtitle: 'Vault & PDFs',
-                    icon: Icons.school_outlined,
+                    icon: Icons.school_rounded,
                     color: AppColors.secondaryDark,
                     onTap: onNavigateToCertificates ??
                         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CertificateVaultScreen())),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   _buildQuickActionTile(
                     context,
                     title: 'Campus Map',
                     subtitle: 'GPS Venues',
-                    icon: Icons.map_outlined,
+                    icon: Icons.map_rounded,
                     color: AppColors.accentOrange,
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CampusMapScreen())),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   _buildQuickActionTile(
                     context,
-                    title: 'App Flow & Sitemap',
+                    title: 'App Flow',
                     subtitle: 'Visual Roadmap',
-                    icon: Icons.account_tree_outlined,
+                    icon: Icons.account_tree_rounded,
                     color: AppColors.statusLive,
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SitemapScreen())),
                   ),
@@ -227,19 +294,22 @@ class StudentDashboard extends StatelessWidget {
                     Container(
                       width: 10,
                       height: 10,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.statusLive,
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: AppColors.statusLive.withOpacity(0.6), blurRadius: 6, spreadRadius: 1),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'HAPPENING RIGHT NOW (LIVE)',
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         color: AppColors.statusLive,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.6,
                       ),
                     ),
                   ],
@@ -254,18 +324,17 @@ class StudentDashboard extends StatelessWidget {
               // Registered Events & Reminders (SRS 1.6 #2)
               if (registeredEvents.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'My Registered Events & Reminders',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
-                    ),
-                  ],
+                Text(
+                  'My Registered Events & Reminders',
+                  style: GoogleFonts.outfit(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : AppColors.deepNavy,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 130,
+                  height: 135,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: registeredEvents.length,
@@ -281,9 +350,13 @@ class StudentDashboard extends StatelessWidget {
               // Bookmarked Favorites
               if (bookmarkedEvents.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Bookmarked Events',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+                  style: GoogleFonts.outfit(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : AppColors.deepNavy,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 ...bookmarkedEvents.map((e) => EventCard(
@@ -297,23 +370,31 @@ class StudentDashboard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Upcoming College Events',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+                    style: GoogleFonts.outfit(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppColors.deepNavy,
+                    ),
                   ),
                   if (onNavigateToCatalog != null)
                     TextButton(
                       onPressed: onNavigateToCatalog,
-                      child: const Text('View All'),
+                      child: Text(
+                        'View All',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.primary),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 10),
 
               if (upcomingEvents.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
+                GlassContainer(
+                  borderRadius: 18,
+                  padding: const EdgeInsets.all(24),
+                  child: const Center(
                     child: Text('No upcoming events currently scheduled.'),
                   ),
                 )
@@ -339,115 +420,114 @@ class StudentDashboard extends StatelessWidget {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Expanded(
-      child: InkWell(
+      child: GlassContainer(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderLight),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+        borderRadius: 20,
+        blurSigma: 14,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        glowColor: color,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: color.withOpacity(0.35), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.18),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 22),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textPrimaryLight),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
                     ),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
-                    ),
-                  ],
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildRegisteredReminderCard(BuildContext context, EventModel e) {
-    return InkWell(
+    return GlassContainer(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EventDetailsScreen(event: e))),
-      child: Container(
-        width: 240,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.alarm_on, size: 16, color: AppColors.primary),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    DateFormat('MMM dd • hh:mm a').format(e.date),
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary),
-                  ),
+      width: 240,
+      borderRadius: 18,
+      blurSigma: 14,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-              ],
-            ),
-            Text(
-              e.title,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Row(
-              children: [
-                const Icon(Icons.location_on, size: 12, color: AppColors.textSecondaryLight),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    e.venue,
-                    style: const TextStyle(fontSize: 10, color: AppColors.textSecondaryLight),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                child: const Icon(Icons.alarm_on_rounded, size: 14, color: AppColors.primary),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  DateFormat('MMM dd • hh:mm a').format(e.date),
+                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.primary),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          Text(
+            e.title,
+            style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Row(
+            children: [
+              const Icon(Icons.location_on_outlined, size: 12, color: AppColors.textSecondaryLight),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  e.venue,
+                  style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.textSecondaryLight),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

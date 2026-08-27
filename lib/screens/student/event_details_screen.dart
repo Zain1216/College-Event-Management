@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
@@ -6,11 +8,11 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../../models/event_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/event_provider.dart';
 import '../../providers/registration_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/feedback_dialog.dart';
+import '../../widgets/glass_widgets.dart';
 import '../../widgets/role_upgrade_dialog.dart';
 import '../common/campus_map_screen.dart';
 
@@ -57,51 +59,67 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       if (result != null) {
         showDialog(
           context: context,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            title: const Row(
-              children: [
-                Icon(Icons.check_circle, color: AppColors.statusLive, size: 28),
-                SizedBox(width: 10),
-                Text('Registered!', style: TextStyle(fontWeight: FontWeight.w800)),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'You have successfully secured a slot for "${widget.event.title}".',
-                  style: const TextStyle(fontSize: 13),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
+          builder: (ctx) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: GlassContainer(
+              borderRadius: 24,
+              blurSigma: 20,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      const Icon(Icons.qr_code_2, color: AppColors.primary, size: 24),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Digital Pass #${result.qrPassCode.split('-').take(2).join('-')} is ready in My Passes.',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.deepNavy),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.statusLive.withOpacity(0.18),
+                          shape: BoxShape.circle,
                         ),
+                        child: const Icon(Icons.check_circle_rounded, color: AppColors.statusLive, size: 28),
                       ),
+                      const SizedBox(width: 12),
+                      Text('Registered!', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800)),
                     ],
                   ),
-                ),
-              ],
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Great!'),
+                  const SizedBox(height: 14),
+                  Text(
+                    'You have successfully secured a slot for "${widget.event.title}".',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withOpacity(0.45),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.qr_code_2_rounded, color: AppColors.primary, size: 28),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Digital Pass #${result.qrPassCode.split('-').take(2).join('-')} is ready in My Passes.',
+                            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.deepNavy),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Great!'),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       } else {
@@ -116,7 +134,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   void _viewGuidelinesPdf() async {
-    // Generate a clean guidelines preview document
     final pdf = pw.Document();
     pdf.addPage(
       pw.Page(
@@ -155,378 +172,433 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final regProvider = context.watch<RegistrationProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final user = auth.currentUser;
     final isRegistered = user != null && regProvider.isUserRegistered(widget.event.id, user.uid);
     final hasAttended = user != null && regProvider.hasUserAttended(widget.event.id, user.uid);
     final formattedDate = DateFormat('EEEE, MMMM dd, yyyy').format(widget.event.date);
 
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // App Bar with Banner Image
-          SliverAppBar(
-            expandedHeight: 260,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                widget.event.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(
-                    widget.event.bannerUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(color: AppColors.primaryDark),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.3),
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.8),
-                        ],
+    return AmbientGlassBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: CustomScrollView(
+          slivers: [
+            // Sliver App Bar with Banner
+            SliverAppBar(
+              expandedHeight: 260,
+              pinned: true,
+              backgroundColor: Colors.transparent,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ClipOval(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.4),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  widget.event.title,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    shadows: const [Shadow(color: Colors.black, blurRadius: 6)],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      widget.event.bannerUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.35),
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.85),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ClipOval(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.4),
+                        child: IconButton(
+                          icon: Icon(
+                            user?.bookmarkedEventIds.contains(widget.event.id) ?? false
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: () => auth.toggleBookmark(widget.event.id),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  user?.bookmarkedEventIds.contains(widget.event.id) ?? false
-                      ? Icons.bookmark
-                      : Icons.bookmark_border,
-                  color: Colors.white,
-                ),
-                onPressed: () => auth.toggleBookmark(widget.event.id),
-              ),
-            ],
-          ),
 
-          // Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Badges Row
-                  Row(
-                    children: [
-                      StatusBadge(
-                        status: widget.event.status.displayName,
-                        isLive: widget.event.status == EventStatus.live,
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          widget.event.category.displayName,
-                          style: const TextStyle(
-                            color: AppColors.primaryDark,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      if (widget.event.averageRating > 0)
-                        Row(
-                          children: [
-                            const Icon(Icons.star, color: AppColors.accentGold, size: 18),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${widget.event.averageRating} (${widget.event.reviewCount})',
-                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // Event Title
-                  Text(
-                    widget.event.title,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimaryLight,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-                  Text(
-                    'Organized by ${widget.event.department}',
-                    style: const TextStyle(fontSize: 13, color: AppColors.secondaryDark, fontWeight: FontWeight.w600),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Quick Info Cards (Date, Time, Venue)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: Column(
+            // Content Body
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Badges Row
+                    Row(
                       children: [
-                        _buildInfoRow(Icons.calendar_month, 'Date', formattedDate),
-                        const Divider(height: 20, color: AppColors.borderLight),
-                        _buildInfoRow(Icons.schedule, 'Time', widget.event.time),
-                        const Divider(height: 20, color: AppColors.borderLight),
-                        _buildInfoRow(
-                          Icons.location_on,
-                          'Venue',
-                          widget.event.venue,
-                          trailing: TextButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CampusMapScreen(highlightEventId: widget.event.id),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.map, size: 14),
-                            label: const Text('View on Map', style: TextStyle(fontSize: 11)),
+                        StatusBadge(
+                          status: widget.event.status.displayName,
+                          isLive: widget.event.status == EventStatus.live,
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryContainer.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Capacity & Registration Bar
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Seat Availability',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-                            ),
-                            Text(
-                              '${widget.event.registeredCount} / ${widget.event.maxParticipants} Registered',
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: LinearProgressIndicator(
-                            value: (widget.event.registeredCount / widget.event.maxParticipants).clamp(0.0, 1.0),
-                            minHeight: 8,
-                            backgroundColor: AppColors.borderLight,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              widget.event.isFull ? AppColors.error : AppColors.secondary,
+                          child: Text(
+                            widget.event.category.displayName,
+                            style: GoogleFonts.inter(
+                              color: AppColors.primaryDark,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Description
-                  const Text('About the Event', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.event.description,
-                    style: const TextStyle(fontSize: 14, height: 1.5, color: AppColors.textSecondaryLight),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Tags
-                  if (widget.event.tags.isNotEmpty) ...[
-                    const Text('Tags', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: widget.event.tags
-                          .map((t) => Chip(
-                                label: Text('#$t', style: const TextStyle(fontSize: 11)),
-                                backgroundColor: AppColors.backgroundLight,
-                              ))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  // Guidelines PDF & Organizer Contacts
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _viewGuidelinesPdf,
-                          icon: const Icon(Icons.picture_as_pdf, color: AppColors.error),
-                          label: const Text('Event Guidelines (PDF)'),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Organizer Info Box
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: Row(
-                      children: [
-                        const CircleAvatar(
-                          backgroundColor: AppColors.primaryContainer,
-                          child: Icon(Icons.person, color: AppColors.primary),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        const Spacer(),
+                        if (widget.event.averageRating > 0)
+                          Row(
                             children: [
-                              Text(widget.event.organizerName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-                              Text(widget.event.organizerEmail, style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
+                              const Icon(Icons.star_rounded, color: AppColors.accentGold, size: 20),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${widget.event.averageRating} (${widget.event.reviewCount})',
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 13),
+                              ),
                             ],
                           ),
-                        ),
-                        if (widget.event.organizerPhone.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondaryContainer,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.phone, size: 16, color: AppColors.secondaryDark),
-                          ),
                       ],
                     ),
-                  ),
 
-                  // Winners Section (if completed / announced)
-                  if (widget.event.winners.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    Container(
+                    const SizedBox(height: 16),
+
+                    // Event Title & Dept
+                    Text(
+                      widget.event.title,
+                      style: GoogleFonts.outfit(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Organized by ${widget.event.department}',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: AppColors.secondaryDark,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // Quick Info Glass Card (Date, Time, Venue)
+                    GlassContainer(
+                      borderRadius: 20,
+                      blurSigma: 16,
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.goldGradient.scale(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.accentGold),
-                      ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.emoji_events, color: AppColors.accentGold),
-                              SizedBox(width: 8),
-                              Text('Official Event Winners', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
-                            ],
+                          _buildInfoRow(Icons.calendar_month_rounded, 'Date', formattedDate),
+                          Divider(height: 20, color: isDark ? Colors.white12 : AppColors.borderLight),
+                          _buildInfoRow(Icons.schedule_rounded, 'Time', widget.event.time),
+                          Divider(height: 20, color: isDark ? Colors.white12 : AppColors.borderLight),
+                          _buildInfoRow(
+                            Icons.location_on_rounded,
+                            'Venue',
+                            widget.event.venue,
+                            trailing: TextButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CampusMapScreen(highlightEventId: widget.event.id),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.map_rounded, size: 15),
+                              label: Text('Map View', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700)),
+                            ),
                           ),
-                          const SizedBox(height: 12),
-                          ...widget.event.winners.map((w) => Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Row(
-                                  children: [
-                                    Text(w.rank == 1 ? '🥇' : (w.rank == 2 ? '🥈' : '🥉'), style: const TextStyle(fontSize: 18)),
-                                    const SizedBox(width: 8),
-                                    Text(w.studentName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                                    const Spacer(),
-                                    Text(w.prizeTitle, style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
-                                  ],
-                                ),
-                              )),
                         ],
                       ),
                     ),
-                  ],
 
-                  // Feedback Submission (SRS 1.6 #9)
-                  if (hasAttended || widget.event.status == EventStatus.completed) ...[
-                    const SizedBox(height: 20),
-                    Container(
+                    const SizedBox(height: 16),
+
+                    // Capacity & Registration Bar Glass Card
+                    GlassContainer(
+                      borderRadius: 20,
+                      blurSigma: 14,
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondaryContainer.withOpacity(0.4),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.secondary.withOpacity(0.4)),
-                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Attended this Event?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
-                          const SizedBox(height: 4),
-                          const Text('Rate parameters (Organization, Relevance, Coordination, Overall) to help organizers improve.', style: TextStyle(fontSize: 12, color: AppColors.deepNavy)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Seat Availability',
+                                style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800),
+                              ),
+                              Text(
+                                '${widget.event.registeredCount} / ${widget.event.maxParticipants} Registered',
+                                style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 10),
-                          ElevatedButton.icon(
-                            onPressed: () => FeedbackDialog.show(context, widget.event),
-                            icon: const Icon(Icons.star, size: 16),
-                            label: const Text('Submit 4-Parameter Rating'),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: (widget.event.registeredCount / widget.event.maxParticipants).clamp(0.0, 1.0),
+                              minHeight: 8,
+                              backgroundColor: AppColors.primaryContainer.withOpacity(0.5),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                widget.event.isFull ? AppColors.error : AppColors.secondary,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
 
-                  const SizedBox(height: 80), // bottom bar spacing
-                ],
+                    const SizedBox(height: 18),
+
+                    // About Description Glass Card
+                    GlassContainer(
+                      borderRadius: 20,
+                      blurSigma: 14,
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'About the Event',
+                            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.event.description,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              height: 1.55,
+                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                            ),
+                          ),
+                          if (widget.event.tags.isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: widget.event.tags
+                                  .map((t) => Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary.withOpacity(0.08),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                                        ),
+                                        child: Text(
+                                          '#$t',
+                                          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Guidelines PDF Action Button
+                    GlassButton(
+                      label: 'Download Event Guidelines (Official PDF)',
+                      icon: Icons.picture_as_pdf_rounded,
+                      isPrimary: false,
+                      color: AppColors.primaryDark,
+                      onPressed: _viewGuidelinesPdf,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Organizer Info Glass Box
+                    GlassContainer(
+                      borderRadius: 18,
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.heroGradient,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(Icons.person_rounded, color: Colors.white, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.event.organizerName,
+                                  style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 13.5),
+                                ),
+                                Text(
+                                  widget.event.organizerEmail,
+                                  style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Winners Section (if announced)
+                    if (widget.event.winners.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      GlassContainer(
+                        borderRadius: 20,
+                        glowColor: AppColors.accentGold,
+                        customColor: AppColors.accentGold.withOpacity(0.12),
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.emoji_events_rounded, color: AppColors.accentGold, size: 22),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Official Event Winners',
+                                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            ...widget.event.winners.map((w) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Row(
+                                    children: [
+                                      Text(w.rank == 1 ? '🥇' : (w.rank == 2 ? '🥈' : '🥉'), style: const TextStyle(fontSize: 18)),
+                                      const SizedBox(width: 8),
+                                      Text(w.studentName, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
+                                      const Spacer(),
+                                      Text(w.prizeTitle, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
+                                    ],
+                                  ),
+                                )),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    // Feedback Submission (SRS 1.6 #9)
+                    if (hasAttended || widget.event.status == EventStatus.completed) ...[
+                      const SizedBox(height: 18),
+                      GlassContainer(
+                        borderRadius: 20,
+                        customColor: AppColors.secondary.withOpacity(0.12),
+                        glowColor: AppColors.secondary,
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Attended this Event?',
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 15),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Rate parameters (Organization, Relevance, Coordination, Overall) to help organizers improve.',
+                              style: GoogleFonts.inter(fontSize: 12, color: AppColors.deepNavy),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed: () => FeedbackDialog.show(context, widget.event),
+                              icon: const Icon(Icons.star_rounded, size: 16),
+                              label: const Text('Submit 4-Parameter Rating'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
             ),
           ],
         ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
+        bottomNavigationBar: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A).withOpacity(0.85) : Colors.white.withOpacity(0.85),
+                border: Border(
+                  top: BorderSide(
+                    color: isDark ? Colors.white.withOpacity(0.12) : Colors.white.withOpacity(0.9),
+                    width: 1.2,
+                  ),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isDark ? Colors.black : AppColors.primary).withOpacity(0.12),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
                 child: isRegistered
                     ? OutlinedButton.icon(
                         onPressed: () {
@@ -534,35 +606,24 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                             const SnackBar(content: Text('You are already registered. Access pass in My Passes.')),
                           );
                         },
-                        icon: const Icon(Icons.check_circle, color: AppColors.statusLive),
-                        label: const Text('Registered • View Pass in Tab'),
+                        icon: const Icon(Icons.check_circle_rounded, color: AppColors.statusLive),
+                        label: Text('Registered • View Pass in Tab', style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
                       )
-                    : ElevatedButton.icon(
+                    : GlassButton(
+                        label: widget.event.isFull
+                            ? 'Event Full'
+                            : (user?.role.key == 'visitor'
+                                ? 'Upgrade Profile & Register'
+                                : '1-Click Register for Event'),
+                        icon: Icons.touch_app_rounded,
+                        isLoading: _isRegistering,
                         onPressed: (_isRegistering || widget.event.isFull)
                             ? null
                             : () => _handleRegister(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        icon: _isRegistering
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
-                            : const Icon(Icons.touch_app),
-                        label: Text(
-                          widget.event.isFull
-                              ? 'Event Full'
-                              : (user?.role.key == 'visitor'
-                                  ? 'Upgrade Profile & Register (1-Click)'
-                                  : '1-Click Register for Event'),
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                        ),
+                        height: 50,
                       ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -572,13 +633,20 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value, {Widget? trailing}) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.primary),
-        const SizedBox(width: 10),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.primary),
+        ),
+        const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
-            Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
+            Text(value, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
           ],
         ),
         if (trailing != null) ...[

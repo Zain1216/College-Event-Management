@@ -69,6 +69,17 @@ class NotificationModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? DateTime.now();
+  }
+
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
     NotificationType parseType(String? t) {
       switch (t) {
@@ -98,9 +109,7 @@ class NotificationModel {
       eventId: map['eventId'] as String?,
       type: parseType(map['type'] as String?),
       isRead: map['isRead'] as bool? ?? false,
-      createdAt: map['createdAt'] != null
-          ? DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      createdAt: _parseDate(map['createdAt']),
     );
   }
 }

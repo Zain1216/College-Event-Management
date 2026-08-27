@@ -123,10 +123,4 @@ class AdminProvider extends ChangeNotifier {
       feedbacks: _dataStore.feedback,
     );
   }
-
-  /// Reset Database to Factory Seed Data
-  Future<void> resetDatabase() async {
-    await _dataStore.resetToSeedData();
-    notifyListeners();
-  }
 }

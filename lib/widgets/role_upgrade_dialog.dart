@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
+import 'glass_widgets.dart';
 
 class RoleUpgradeDialog extends StatefulWidget {
   const RoleUpgradeDialog({super.key});
@@ -96,8 +98,10 @@ class _RoleUpgradeDialogState extends State<RoleUpgradeDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
+      backgroundColor: Colors.transparent,
+      child: GlassContainer(
+        borderRadius: 28,
+        blurSigma: 24,
         constraints: const BoxConstraints(maxWidth: 480),
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -113,27 +117,27 @@ class _RoleUpgradeDialogState extends State<RoleUpgradeDialog> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryContainer,
-                        borderRadius: BorderRadius.circular(12),
+                        gradient: AppColors.heroGradient,
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.school, color: AppColors.primary, size: 28),
+                      child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Upgrade to Participant',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w900,
                               color: AppColors.textPrimaryLight,
                             ),
                           ),
                           Text(
                             'Unlock event registrations & e-certificates',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 12,
                               color: AppColors.textSecondaryLight,
                             ),
@@ -144,26 +148,26 @@ class _RoleUpgradeDialogState extends State<RoleUpgradeDialog> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
-                const Divider(color: AppColors.borderLight),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
+                Divider(color: Colors.white.withOpacity(0.6)),
+                const SizedBox(height: 14),
 
                 // Notice
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryContainer.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppColors.secondary.withOpacity(0.3)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.secondaryDark, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.info_outline_rounded, color: AppColors.secondaryDark, size: 20),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Student Visitors can browse events. Complete your college credentials below for 1-click registration access.',
-                          style: TextStyle(fontSize: 12, color: AppColors.deepNavy),
+                          'Visitors have browse-only access. Complete your student verification details below to enable 1-click event seat registration.',
+                          style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.deepNavy),
                         ),
                       ),
                     ],
@@ -173,113 +177,104 @@ class _RoleUpgradeDialogState extends State<RoleUpgradeDialog> {
                 const SizedBox(height: 18),
 
                 // Enrollment Number
-                const Text('Enrollment / Student ID Number *',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                Text('College Enrollment / Student ID *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                TextFormField(
+                GlassTextField(
                   controller: _enrollmentController,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. CS-2023-089',
-                    prefixIcon: Icon(Icons.badge_outlined, color: AppColors.primary),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Enrollment number is required';
-                    return null;
-                  },
+                  hintText: 'e.g. CS-2024-001',
+                  prefixIcon: Icons.badge_outlined,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Enrollment number is required' : null,
                 ),
 
                 const SizedBox(height: 14),
 
-                // Department Dropdown
-                const Text('Academic Department *',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                // Department Selector
+                Text('Academic Department *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  value: _departments.contains(_departmentController.text)
-                      ? _departmentController.text
-                      : _departments.first,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.domain, color: AppColors.primary),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.72),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
                   ),
-                  items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 13)))).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _departmentController.text = val);
-                  },
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButtonFormField<String>(
+                      value: _departments.contains(_departmentController.text) ? _departmentController.text : _departments.first,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.domain_rounded, color: AppColors.primary, size: 20),
+                      ),
+                      items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600)))).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _departmentController.text = val);
+                      },
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 14),
 
-                // Mobile
-                const Text('Contact Mobile Number',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                // Mobile Number
+                Text('Mobile Number *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                TextFormField(
+                GlassTextField(
                   controller: _mobileController,
+                  hintText: 'e.g. +92 300 1234567',
+                  prefixIcon: Icons.phone_android_rounded,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    hintText: '+1 (555) 000-0000',
-                    prefixIcon: Icon(Icons.phone_android, color: AppColors.primary),
-                  ),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Mobile number is required' : null,
                 ),
 
                 const SizedBox(height: 14),
 
-                // College ID Proof Attachment Simulation
+                // College ID proof preview
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundLight,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.borderLight),
+                    color: Colors.white.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withOpacity(0.8)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.attachment, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('College ID Proof Document',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                            Text('Attached: Student_ID_Card.jpg',
-                                style: TextStyle(fontSize: 11, color: AppColors.statusLive)),
-                          ],
+                      const Icon(Icons.attachment_rounded, color: AppColors.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _idProofAttached ? 'Default College ID Card proof attached' : 'No document selected',
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('ID proof file updated.')),
-                          );
-                        },
-                        child: const Text('Change'),
+                      Checkbox(
+                        value: _idProofAttached,
+                        activeColor: AppColors.primary,
+                        onChanged: (v) => setState(() => _idProofAttached = v ?? false),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 22),
 
                 // Buttons
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
-                      onPressed: _isSubmitting ? null : () => Navigator.pop(context, false),
-                      child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryLight)),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: _isSubmitting ? null : () => Navigator.pop(context, false),
+                        child: Text('Cancel', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                      ),
                     ),
-                    const SizedBox(width: 10),
-                    ElevatedButton.icon(
-                      onPressed: _isSubmitting ? null : _submitUpgrade,
-                      icon: _isSubmitting
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Icon(Icons.verified_user, size: 18),
-                      label: const Text('Verify & Upgrade'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: GlassButton(
+                        label: 'Submit & Upgrade',
+                        icon: Icons.check_circle_rounded,
+                        isLoading: _isSubmitting,
+                        onPressed: _isSubmitting ? null : _submitUpgrade,
+                      ),
                     ),
                   ],
                 ),

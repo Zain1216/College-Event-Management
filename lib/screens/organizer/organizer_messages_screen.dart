@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/event_model.dart';
@@ -6,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/event_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/glass_widgets.dart';
 
 class OrganizerMessagesScreen extends StatefulWidget {
   const OrganizerMessagesScreen({super.key});
@@ -63,6 +65,7 @@ class _OrganizerMessagesScreenState extends State<OrganizerMessagesScreen> {
   Widget build(BuildContext context) {
     final eventProvider = context.watch<EventProvider>();
     final notifProvider = context.watch<NotificationProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final myEvents = eventProvider.allEvents;
 
     final announcements = notifProvider.allNotifications
@@ -70,114 +73,115 @@ class _OrganizerMessagesScreenState extends State<OrganizerMessagesScreen> {
         .toList();
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Participant Messages & Broadcasts'),
+        title: Text('Broadcasts & Alerts', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 85),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Broadcast Composer Card
-            Container(
+            // Broadcast Composer Glass Card
+            GlassContainer(
+              borderRadius: 24,
+              blurSigma: 16,
               padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.campaign, color: AppColors.primary, size: 24),
-                      SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.heroGradient,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 10),
                       Text(
-                        'Broadcast Live Update / Announcement',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+                        'Broadcast Live Update',
+                        style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
                       ),
                     ],
                   ),
                   const SizedBox(height: 14),
 
                   // Target Event Selector
-                  DropdownButtonFormField<String>(
-                    value: _selectedEventId,
-                    decoration: const InputDecoration(
-                      labelText: 'Select Target Event Audience',
-                      prefixIcon: Icon(Icons.group, color: AppColors.primary),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.72),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
                     ),
-                    items: [
-                      const DropdownMenuItem(value: 'all', child: Text('All Registered Students (Campus-wide)')),
-                      ...myEvents.map((e) => DropdownMenuItem(value: e.id, child: Text(e.title, overflow: TextOverflow.ellipsis))),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedEventId = val);
-                    },
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedEventId,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          labelText: 'Target Event Audience',
+                          prefixIcon: Icon(Icons.group_rounded, color: AppColors.primary),
+                        ),
+                        items: [
+                          const DropdownMenuItem(value: 'all', child: Text('All Registered Students (Campus-wide)')),
+                          ...myEvents.map((e) => DropdownMenuItem(value: e.id, child: Text(e.title, overflow: TextOverflow.ellipsis))),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedEventId = val);
+                        },
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 12),
 
                   // Announcement Title
-                  TextField(
+                  GlassTextField(
                     controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Announcement Headline',
-                      hintText: 'e.g. Schedule Update / Venue Changed to Hall C',
-                      prefixIcon: Icon(Icons.title, color: AppColors.primary),
-                    ),
+                    labelText: 'Announcement Headline',
+                    hintText: 'e.g. Schedule Update / Venue Changed to Hall C',
+                    prefixIcon: Icons.title_rounded,
                   ),
 
                   const SizedBox(height: 12),
 
                   // Announcement Body
-                  TextField(
+                  GlassTextField(
                     controller: _messageController,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Detailed Broadcast Message',
-                      hintText: 'Important instructions, time extensions, or live stream links...',
-                    ),
+                    labelText: 'Detailed Broadcast Message',
+                    hintText: 'Important instructions, time extensions, or live stream links...',
                   ),
 
                   const SizedBox(height: 16),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46,
-                    child: ElevatedButton.icon(
-                      onPressed: _isSending ? null : _broadcastAnnouncement,
-                      icon: _isSending
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Icon(Icons.send, size: 16),
-                      label: const Text('Send Instant Push Broadcast', style: TextStyle(fontWeight: FontWeight.w700)),
-                    ),
+                  GlassButton(
+                    label: 'Send Instant Push Broadcast',
+                    icon: Icons.send_rounded,
+                    isLoading: _isSending,
+                    onPressed: _isSending ? null : _broadcastAnnouncement,
+                    height: 48,
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
 
             // Live Broadcast Feed History
-            const Text(
+            Text(
               'Recent Broadcast History',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+              style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
             ),
             const SizedBox(height: 10),
 
             if (announcements.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: Text('No announcements broadcasted yet.')),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(child: Text('No announcements broadcasted yet.', style: GoogleFonts.inter(color: AppColors.textSecondaryLight))),
               )
             else
               ListView.separated(
@@ -187,23 +191,20 @@ class _OrganizerMessagesScreenState extends State<OrganizerMessagesScreen> {
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, idx) {
                   final notif = announcements[idx];
-                  return Container(
+                  return GlassContainer(
+                    borderRadius: 18,
+                    blurSigma: 12,
                     padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.secondaryContainer,
+                            color: AppColors.secondaryDark.withOpacity(0.14),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.campaign, color: AppColors.secondaryDark, size: 20),
+                          child: const Icon(Icons.campaign_rounded, color: AppColors.secondaryDark, size: 20),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -216,19 +217,19 @@ class _OrganizerMessagesScreenState extends State<OrganizerMessagesScreen> {
                                   Expanded(
                                     child: Text(
                                       notif.title,
-                                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                                      style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 13.5),
                                     ),
                                   ),
                                   Text(
                                     DateFormat('MMM dd • hh:mm a').format(notif.createdAt),
-                                    style: const TextStyle(fontSize: 10, color: AppColors.textMutedLight),
+                                    style: GoogleFonts.inter(fontSize: 10, color: AppColors.textMutedLight),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 notif.message,
-                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                                style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
                               ),
                             ],
                           ),

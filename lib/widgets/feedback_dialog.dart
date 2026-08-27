@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/event_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/feedback_provider.dart';
 import '../theme/app_theme.dart';
+import 'glass_widgets.dart';
 
 class FeedbackDialog extends StatefulWidget {
   final EventModel event;
@@ -80,10 +82,13 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
   @override
   Widget build(BuildContext context) {
     final avg = (_orgRating + _relRating + _coordRating + _overallRating) / 4.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
+      backgroundColor: Colors.transparent,
+      child: GlassContainer(
+        borderRadius: 26,
+        blurSigma: 24,
         constraints: const BoxConstraints(maxWidth: 500),
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
@@ -97,27 +102,27 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.secondaryContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: AppColors.heroGradient,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.rate_review, color: AppColors.secondaryDark, size: 26),
+                    child: const Icon(Icons.rate_review_rounded, color: Colors.white, size: 26),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Event Feedback & Rating',
-                          style: TextStyle(
+                          style: GoogleFonts.outfit(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimaryLight,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : AppColors.textPrimaryLight,
                           ),
                         ),
                         Text(
                           widget.event.title,
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -127,29 +132,29 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
                 ],
               ),
 
-              const SizedBox(height: 16),
-              const Divider(color: AppColors.borderLight),
+              const SizedBox(height: 14),
+              Divider(color: Colors.white.withOpacity(0.6)),
               const SizedBox(height: 12),
 
               // Average Score Box
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderLight),
+                  color: Colors.white.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.8)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Overall Score Calculated', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    Text('Calculated Average Score', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: AppColors.accentGold, size: 20),
+                        const Icon(Icons.star_rounded, color: AppColors.accentGold, size: 22),
                         const SizedBox(width: 4),
                         Text(
                           '${avg.toStringAsFixed(1)} / 5.0',
-                          style: const TextStyle(
+                          style: GoogleFonts.outfit(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                             color: AppColors.deepNavy,
@@ -163,48 +168,52 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
 
               const SizedBox(height: 16),
 
-              // 4 Required Criteria (SRS 1.6 #9)
-              _buildRatingRow('1. Event Organization', _orgRating, (v) => setState(() => _orgRating = v)),
-              _buildRatingRow('2. Content Relevance', _relRating, (v) => setState(() => _relRating = v)),
-              _buildRatingRow('3. Staff Coordination', _coordRating, (v) => setState(() => _coordRating = v)),
-              _buildRatingRow('4. Overall Experience', _overallRating, (v) => setState(() => _overallRating = v)),
+              // Parameter 1
+              _buildStarRow('1. Event Organization & Punctuality', _orgRating, (v) => setState(() => _orgRating = v)),
+              const SizedBox(height: 10),
 
-              const SizedBox(height: 14),
+              // Parameter 2
+              _buildStarRow('2. Content Quality & Topic Relevance', _relRating, (v) => setState(() => _relRating = v)),
+              const SizedBox(height: 10),
 
-              // Comments input
-              const Text('Comments & Suggestions (Optional)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+              // Parameter 3
+              _buildStarRow('3. Host & Volunteer Coordination', _coordRating, (v) => setState(() => _coordRating = v)),
+              const SizedBox(height: 10),
+
+              // Parameter 4
+              _buildStarRow('4. Overall Experience & Value', _overallRating, (v) => setState(() => _overallRating = v)),
+
+              const SizedBox(height: 16),
+
+              // Written feedback
+              Text('Your Review / Suggestions', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
-              TextFormField(
+              GlassTextField(
                 controller: _commentController,
+                hintText: 'Share your thoughts, recommendations, or shoutouts to organizers...',
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Share what you enjoyed or what could be improved for next time...',
-                ),
               ),
 
               const SizedBox(height: 20),
 
               // Buttons
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: _isSubmitting ? null : () => Navigator.pop(context, false),
-                    child: const Text('Cancel'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                  Expanded(
+                    child: TextButton(
+                      onPressed: _isSubmitting ? null : () => Navigator.pop(context, false),
+                      child: Text('Cancel', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
                     ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('Submit Feedback'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: GlassButton(
+                      label: 'Submit Feedback',
+                      icon: Icons.send_rounded,
+                      isLoading: _isSubmitting,
+                      onPressed: _isSubmitting ? null : _submit,
+                    ),
                   ),
                 ],
               ),
@@ -215,38 +224,31 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
     );
   }
 
-  Widget _buildRatingRow(String label, int currentVal, ValueChanged<int> onSelect) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimaryLight),
-            ),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(5, (index) {
-              final starIndex = index + 1;
-              return InkWell(
-                onTap: () => onSelect(starIndex),
-                borderRadius: BorderRadius.circular(16),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: Icon(
-                    starIndex <= currentVal ? Icons.star : Icons.star_border,
-                    color: starIndex <= currentVal ? AppColors.accentGold : AppColors.borderDark,
-                    size: 24,
-                  ),
+  Widget _buildStarRow(String label, int currentVal, Function(int) onSelect) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondaryLight)),
+        const SizedBox(height: 4),
+        Row(
+          children: List.generate(5, (index) {
+            final starVal = index + 1;
+            final isFilled = starVal <= currentVal;
+            return InkWell(
+              onTap: () => onSelect(starVal),
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Icon(
+                  isFilled ? Icons.star_rounded : Icons.star_outline_rounded,
+                  color: isFilled ? AppColors.accentGold : Colors.grey.shade400,
+                  size: 26,
                 ),
-              );
-            }),
-          ),
-        ],
-      ),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }

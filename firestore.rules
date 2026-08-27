@@ -6,21 +6,25 @@ service cloud.firestore {
     function isAuthenticated() {
       return request.auth != null;
     }
+
+    function userDocExists() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
     
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
     
     function isAdmin() {
-      return isAuthenticated() && getUserData().role == 'admin';
+      return userDocExists() && getUserData().role == 'admin';
     }
     
     function isOrganizer() {
-      return isAuthenticated() && (getUserData().role == 'organizer' || getUserData().role == 'admin');
+      return userDocExists() && (getUserData().role == 'organizer' || getUserData().role == 'admin');
     }
     
     function isParticipant() {
-      return isAuthenticated() && (getUserData().role == 'participant' || isOrganizer());
+      return userDocExists() && (getUserData().role == 'participant' || isOrganizer());
     }
 
     // Users Collection: Public read for general profile info; only admins or owner can write

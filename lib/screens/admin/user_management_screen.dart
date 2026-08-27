@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../providers/admin_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/glass_widgets.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -20,6 +21,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Widget build(BuildContext context) {
     final adminProvider = context.watch<AdminProvider>();
     final users = adminProvider.allUsers;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final filteredUsers = users.where((u) {
       if (_roleFilter != 'All' && u.role.displayName.toLowerCase() != _roleFilter.toLowerCase()) {
@@ -38,62 +40,69 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final pendingStaff = adminProvider.pendingStaffApprovals;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('User Accounts & Role Governance'),
+        title: Text('User Accounts & Roles', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 85),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Pending Staff Approvals Section (SRS 1.6 #1 & #7)
             if (pendingStaff.isNotEmpty) ...[
-              Container(
+              GlassContainer(
+                borderRadius: 22,
+                blurSigma: 14,
+                glowColor: AppColors.statusPending,
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.statusPending.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.statusPending),
-                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.person_add, color: AppColors.statusPending, size: 20),
-                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.statusPending.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.person_add_rounded, color: AppColors.statusPending, size: 20),
+                        ),
+                        const SizedBox(width: 10),
                         Text(
                           'Staff Registration Approvals (${pendingStaff.length})',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+                          style: GoogleFonts.outfit(fontSize: 14.5, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Staff members must be validated by admin before accessing event management privileges.',
-                      style: TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
+                      style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
                     ),
                     const SizedBox(height: 12),
                     ...pendingStaff.map((staff) => Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white.withOpacity(0.65),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.white.withOpacity(0.85)),
                           ),
                           child: Row(
                             children: [
                               CircleAvatar(
                                 backgroundColor: AppColors.primaryContainer,
-                                child: Text(staff.fullName.substring(0, 1), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                child: Text(staff.fullName.substring(0, 1), style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(staff.fullName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-                                    Text('${staff.email} • ${staff.department}', style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
+                                    Text(staff.fullName, style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 13)),
+                                    Text('${staff.email} • ${staff.department}', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
                                   ],
                                 ),
                               ),
@@ -110,7 +119,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   backgroundColor: AppColors.statusLive,
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 ),
-                                child: const Text('Approve', style: TextStyle(fontSize: 11)),
+                                child: const Text('Approve', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                               ),
                             ],
                           ),
@@ -118,15 +127,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
             ],
 
-            // Search Bar & Filter Chips
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search user by name, email, department, or enrollment...',
-                prefixIcon: Icon(Icons.search, color: AppColors.primary),
-              ),
+            // Search Bar
+            GlassTextField(
+              hintText: 'Search user by name, email, department...',
+              prefixIcon: Icons.search_rounded,
               onChanged: (val) => setState(() => _searchQuery = val),
             ),
 
@@ -150,16 +157,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             // User Roster List
             Text(
               'User Directory (${filteredUsers.length} Users)',
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+              style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.deepNavy),
             ),
             const SizedBox(height: 10),
 
             if (filteredUsers.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text('No users match current search criteria.'),
-                ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(child: Text('No users match current search criteria.', style: GoogleFonts.inter(color: AppColors.textSecondaryLight))),
               )
             else
               ListView.separated(
@@ -184,16 +189,35 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final isSelected = _roleFilter == role;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text('$role ($count)'),
-        selected: isSelected,
-        selectedColor: AppColors.primaryContainer,
-        onSelected: (val) => setState(() => _roleFilter = role),
+      child: InkWell(
+        onTap: () => setState(() => _roleFilter = role),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            gradient: isSelected ? AppColors.heroGradient : null,
+            color: isSelected ? null : Colors.white.withOpacity(0.65),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? Colors.white.withOpacity(0.6) : Colors.white.withOpacity(0.8),
+              width: 1.2,
+            ),
+          ),
+          child: Text(
+            '$role ($count)',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              color: isSelected ? Colors.white : AppColors.textPrimaryLight,
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildUserTile(BuildContext context, UserModel u, AdminProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     Color roleColor;
     switch (u.role) {
       case UserRole.admin:
@@ -210,23 +234,21 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         roleColor = AppColors.textSecondaryLight;
     }
 
-    return Container(
+    return GlassContainer(
+      borderRadius: 20,
+      blurSigma: 12,
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: u.isActive ? AppColors.borderLight : AppColors.error.withOpacity(0.4)),
-      ),
+      glowColor: u.isActive ? roleColor : AppColors.error,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: roleColor.withOpacity(0.15),
+                backgroundColor: roleColor.withOpacity(0.18),
                 child: Text(
                   u.fullName.isNotEmpty ? u.fullName.substring(0, 1).toUpperCase() : 'U',
-                  style: TextStyle(color: roleColor, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(color: roleColor, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(width: 12),
@@ -239,7 +261,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         Flexible(
                           child: Text(
                             u.fullName,
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 14),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -247,24 +269,25 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         if (!u.isActive)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: AppColors.error.withOpacity(0.15), borderRadius: BorderRadius.circular(4)),
+                            decoration: BoxDecoration(color: AppColors.error.withOpacity(0.18), borderRadius: BorderRadius.circular(6)),
                             child: const Text('DEACTIVATED', style: TextStyle(color: AppColors.error, fontSize: 9, fontWeight: FontWeight.bold)),
                           ),
                       ],
                     ),
-                    Text('${u.email}  •  ${u.department}', style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
+                    Text('${u.email}  •  ${u.department}', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: roleColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  color: roleColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: roleColor.withOpacity(0.3)),
                 ),
                 child: Text(
                   u.role.displayName,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: roleColor),
+                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: roleColor),
                 ),
               ),
             ],
@@ -272,10 +295,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
           if (u.enrollmentNo != null) ...[
             const SizedBox(height: 6),
-            Text('Enrollment ID: ${u.enrollmentNo}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+            Text('Enrollment ID: ${u.enrollmentNo}', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary)),
           ],
 
-          const Divider(height: 16, color: AppColors.borderLight),
+          Divider(height: 16, color: isDark ? Colors.white12 : AppColors.borderLight),
 
           // Actions Row (Role modifier & Deactivate toggle)
           Row(
@@ -286,13 +309,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 onSelected: (newRole) => provider.changeUserRole(u.uid, newRole),
                 itemBuilder: (context) => UserRole.values.map((r) => PopupMenuItem(
                   value: r,
-                  child: Text('Change to ${r.displayName}', style: const TextStyle(fontSize: 12)),
+                  child: Text('Change to ${r.displayName}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                 )).toList(),
                 child: Row(
                   children: [
-                    const Icon(Icons.swap_horiz, size: 14, color: AppColors.primary),
+                    const Icon(Icons.swap_horiz_rounded, size: 16, color: AppColors.primary),
                     const SizedBox(width: 4),
-                    const Text('Change Role', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w700)),
+                    Text('Change Role', style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.primary, fontWeight: FontWeight.w800)),
                   ],
                 ),
               ),
@@ -301,8 +324,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               Row(
                 children: [
                   Text(
-                    u.isActive ? 'Active Account' : 'Suspended',
-                    style: TextStyle(fontSize: 11, color: u.isActive ? AppColors.statusLive : AppColors.error, fontWeight: FontWeight.bold),
+                    u.isActive ? 'Active' : 'Suspended',
+                    style: GoogleFonts.inter(fontSize: 11, color: u.isActive ? AppColors.statusLive : AppColors.error, fontWeight: FontWeight.w800),
                   ),
                   Switch(
                     value: u.isActive,

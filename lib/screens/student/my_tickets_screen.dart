@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -7,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/registration_provider.dart';
 import '../../services/qr_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/glass_widgets.dart';
 
 class MyTicketsScreen extends StatelessWidget {
   const MyTicketsScreen({super.key});
@@ -17,25 +20,30 @@ class MyTicketsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Container(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 28,
+          blurSigma: 24,
           constraints: const BoxConstraints(maxWidth: 380),
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
+                  gradient: AppColors.heroGradient,
                   borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8),
+                  ],
                 ),
                 child: Text(
-                  'ENTRY PASS • ${reg.status.displayName.toUpperCase()}',
-                  style: const TextStyle(
+                  'DIGITAL ENTRY PASS • ${reg.status.displayName.toUpperCase()}',
+                  style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.primaryDark,
+                    color: Colors.white,
                     letterSpacing: 1,
                   ),
                 ),
@@ -44,28 +52,28 @@ class MyTicketsScreen extends StatelessWidget {
               Text(
                 reg.eventTitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.deepNavy),
               ),
               const SizedBox(height: 4),
               Text(
                 '${reg.eventCategory} • ${reg.eventVenue}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 18),
 
-              // QR Code Graphic
+              // Glowing Glass QR Code Graphic
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.borderLight, width: 2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      color: AppColors.primary.withOpacity(0.18),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -78,44 +86,50 @@ class MyTicketsScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 14),
-              SelectableText(
-                reg.qrPassCode,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                  letterSpacing: 1,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: SelectableText(
+                  reg.qrPassCode,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryDark,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
 
               // Student details
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.8)),
                 ),
                 child: Column(
                   children: [
                     _buildModalDetailRow('Student Name', reg.studentName),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     _buildModalDetailRow('Enrollment No', reg.enrollmentNo),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     _buildModalDetailRow('Department', reg.department),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     _buildModalDetailRow('Event Date', DateFormat('MMM dd, yyyy').format(reg.eventDate)),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 20),
-              ElevatedButton(
+              const SizedBox(height: 18),
+              GlassButton(
+                label: 'Close Pass',
                 onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(44),
-                ),
-                child: const Text('Close Pass'),
+                height: 44,
               ),
             ],
           ),
@@ -128,8 +142,8 @@ class MyTicketsScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
-        Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.deepNavy)),
+        Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
+        Text(value, style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.deepNavy)),
       ],
     );
   }
@@ -143,41 +157,46 @@ class MyTicketsScreen extends StatelessWidget {
     final registrations = user != null ? regProvider.getRegistrationsForStudent(user.uid) : <RegistrationModel>[];
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('My Event Passes & Tickets'),
+        title: Text('My Event Passes & Tickets', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
       ),
       body: registrations.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryContainer.withOpacity(0.5),
-                        shape: BoxShape.circle,
+                child: GlassContainer(
+                  borderRadius: 24,
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.qr_code_scanner_rounded, size: 50, color: AppColors.primary),
                       ),
-                      child: const Icon(Icons.qr_code_scanner, size: 54, color: AppColors.primary),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'No Event Passes Yet',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Browse upcoming events in the catalog and register with 1-click to get your instant QR entry passes.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      Text(
+                        'No Event Passes Yet',
+                        style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.deepNavy),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Browse upcoming events in the catalog and register with 1-click to get your instant QR entry passes.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondaryLight),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 85),
               itemCount: registrations.length,
               itemBuilder: (context, index) {
                 final reg = registrations[index];
@@ -191,28 +210,23 @@ class MyTicketsScreen extends StatelessWidget {
     final isCancelled = reg.status == RegistrationStatus.cancelled;
     final isAttended = reg.status == RegistrationStatus.attended;
 
-    return Card(
+    return GlassContainer(
+      borderRadius: 22,
+      blurSigma: 16,
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: isCancelled
-              ? AppColors.borderLight
-              : (isAttended ? AppColors.statusLive.withOpacity(0.5) : AppColors.primary.withOpacity(0.3)),
-          width: 1.5,
-        ),
-      ),
+      padding: EdgeInsets.zero,
+      glowColor: isAttended ? AppColors.statusLive : (isCancelled ? Colors.grey : AppColors.primary),
       child: Column(
         children: [
           // Ticket Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isCancelled
-                  ? Colors.grey.shade100
-                  : (isAttended ? AppColors.statusLive.withOpacity(0.1) : AppColors.primaryContainer.withOpacity(0.4)),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              gradient: isCancelled
+                  ? null
+                  : (isAttended ? AppColors.liveGradient : AppColors.heroGradient),
+              color: isCancelled ? Colors.grey.withOpacity(0.25) : null,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -220,40 +234,35 @@ class MyTicketsScreen extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      isAttended ? Icons.verified : (isCancelled ? Icons.cancel : Icons.confirmation_number),
-                      color: isCancelled
-                          ? Colors.grey
-                          : (isAttended ? AppColors.statusLive : AppColors.primary),
+                      isAttended ? Icons.verified_rounded : (isCancelled ? Icons.cancel_rounded : Icons.confirmation_number_rounded),
+                      color: Colors.white,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       reg.eventCategory.toUpperCase(),
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
-                        color: isCancelled ? Colors.grey : AppColors.primaryDark,
-                        letterSpacing: 0.5,
+                        color: Colors.white,
+                        letterSpacing: 0.8,
                       ),
                     ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
                   decoration: BoxDecoration(
-                    color: isCancelled
-                        ? Colors.grey.withOpacity(0.2)
-                        : (isAttended ? AppColors.statusLive.withOpacity(0.2) : AppColors.primary.withOpacity(0.2)),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withOpacity(0.4)),
                   ),
                   child: Text(
-                    reg.status.displayName,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: isCancelled
-                          ? Colors.grey
-                          : (isAttended ? AppColors.statusLive : AppColors.primaryDark),
+                    reg.status.displayName.toUpperCase(),
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -271,13 +280,20 @@ class MyTicketsScreen extends StatelessWidget {
                 if (!isCancelled)
                   InkWell(
                     onTap: () => _showFullQrPass(context, reg),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.borderLight),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.12),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
@@ -287,8 +303,11 @@ class MyTicketsScreen extends StatelessWidget {
                             size: 64,
                             foregroundColor: AppColors.deepNavy,
                           ),
-                          const SizedBox(height: 2),
-                          const Text('Enlarge 🔍', style: TextStyle(fontSize: 8, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Enlarge 🔍',
+                            style: GoogleFonts.inter(fontSize: 8.5, color: AppColors.primary, fontWeight: FontWeight.w800),
+                          ),
                         ],
                       ),
                     ),
@@ -298,8 +317,8 @@ class MyTicketsScreen extends StatelessWidget {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.grey.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(Icons.block, color: Colors.grey),
                   ),
@@ -313,7 +332,7 @@ class MyTicketsScreen extends StatelessWidget {
                     children: [
                       Text(
                         reg.eventTitle,
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
                           color: isCancelled ? Colors.grey : AppColors.textPrimaryLight,
@@ -325,19 +344,19 @@ class MyTicketsScreen extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 12, color: AppColors.primary),
+                          const Icon(Icons.calendar_today_outlined, size: 12, color: AppColors.primary),
                           const SizedBox(width: 4),
                           Text(
                             DateFormat('MMM dd, yyyy').format(reg.eventDate),
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondaryLight),
+                            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondaryLight),
                           ),
                           const SizedBox(width: 10),
-                          const Icon(Icons.schedule, size: 12, color: AppColors.primary),
+                          const Icon(Icons.schedule_rounded, size: 12, color: AppColors.primary),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               reg.eventTime,
-                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
+                              style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -347,12 +366,12 @@ class MyTicketsScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 12, color: AppColors.secondaryDark),
+                          const Icon(Icons.location_on_outlined, size: 12, color: AppColors.secondaryDark),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               reg.eventVenue,
-                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
+                              style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -366,18 +385,18 @@ class MyTicketsScreen extends StatelessWidget {
             ),
           ),
 
-          // Cancel before deadline / Action Footer (SRS 1.6 #4)
+          // Cancel / Show QR Actions Footer
           if (!isCancelled && !isAttended) ...[
-            const Divider(height: 1, color: AppColors.borderLight),
+            Divider(height: 1, color: Colors.white.withOpacity(0.6)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton.icon(
                     onPressed: () => _showFullQrPass(context, reg),
-                    icon: const Icon(Icons.qr_code_2, size: 16),
-                    label: const Text('Show QR Pass at Gate'),
+                    icon: const Icon(Icons.qr_code_2_rounded, size: 16),
+                    label: Text('Open Pass', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
                   ),
                   TextButton(
                     onPressed: () async {
@@ -400,7 +419,7 @@ class MyTicketsScreen extends StatelessWidget {
                         await provider.cancelRegistration(reg.id);
                       }
                     },
-                    child: const Text('Cancel Registration', style: TextStyle(color: AppColors.error, fontSize: 12)),
+                    child: Text('Cancel Seat', style: GoogleFonts.inter(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
