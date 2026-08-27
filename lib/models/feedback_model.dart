@@ -78,6 +78,17 @@ class FeedbackModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? DateTime.now();
+  }
+
   factory FeedbackModel.fromMap(Map<String, dynamic> map) {
     return FeedbackModel(
       id: map['id'] as String? ?? '',
@@ -91,9 +102,7 @@ class FeedbackModel {
       overallRating: (map['overallRating'] as num?)?.toInt() ?? 5,
       comments: map['comments'] as String? ?? '',
       isFlagged: map['isFlagged'] as bool? ?? false,
-      submittedOn: map['submittedOn'] != null
-          ? DateTime.tryParse(map['submittedOn'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      submittedOn: _parseDate(map['submittedOn']),
     );
   }
 }

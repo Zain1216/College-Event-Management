@@ -1,26 +1,12 @@
 enum EventCategory {
-  technical,
-  cultural,
-  sports,
-  seminar,
-  workshop,
-}
+  technical('Technical'),
+  cultural('Cultural'),
+  sports('Sports'),
+  seminar('Seminar'),
+  workshop('Workshop');
 
-extension EventCategoryExtension on EventCategory {
-  String get displayName {
-    switch (this) {
-      case EventCategory.technical:
-        return 'Technical';
-      case EventCategory.cultural:
-        return 'Cultural';
-      case EventCategory.sports:
-        return 'Sports';
-      case EventCategory.seminar:
-        return 'Seminar';
-      case EventCategory.workshop:
-        return 'Workshop';
-    }
-  }
+  final String displayName;
+  const EventCategory(this.displayName);
 
   static EventCategory fromString(String cat) {
     switch (cat.toLowerCase()) {
@@ -40,28 +26,14 @@ extension EventCategoryExtension on EventCategory {
 }
 
 enum EventStatus {
-  pending,
-  approved,
-  live,
-  completed,
-  cancelled,
-}
+  pending('Pending Approval'),
+  approved('Upcoming'),
+  live('Live Now'),
+  completed('Completed'),
+  cancelled('Cancelled');
 
-extension EventStatusExtension on EventStatus {
-  String get displayName {
-    switch (this) {
-      case EventStatus.pending:
-        return 'Pending Approval';
-      case EventStatus.approved:
-        return 'Upcoming';
-      case EventStatus.live:
-        return 'Live Now';
-      case EventStatus.completed:
-        return 'Completed';
-      case EventStatus.cancelled:
-        return 'Cancelled';
-    }
-  }
+  final String displayName;
+  const EventStatus(this.displayName);
 
   static EventStatus fromString(String st) {
     switch (st.toLowerCase()) {
@@ -274,21 +246,30 @@ class EventModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val, [DateTime? fallback]) {
+    if (val == null) return fallback ?? DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? fallback ?? DateTime.now();
+  }
+
   factory EventModel.fromMap(Map<String, dynamic> map) {
     return EventModel(
       id: map['id'] as String? ?? '',
       title: map['title'] as String? ?? '',
       description: map['description'] as String? ?? '',
-      category: EventCategoryExtension.fromString(map['category'] as String? ?? 'Technical'),
+      category: EventCategory.fromString(map['category'] as String? ?? 'Technical'),
       department: map['department'] as String? ?? 'Computer Science',
-      date: map['date'] != null
-          ? DateTime.tryParse(map['date'].toString()) ?? DateTime.now().add(const Duration(days: 3))
-          : DateTime.now().add(const Duration(days: 3)),
+      date: _parseDate(map['date'], DateTime.now().add(const Duration(days: 3))),
       time: map['time'] as String? ?? '10:00 AM',
       venue: map['venue'] as String? ?? 'Main Auditorium',
       latitude: (map['latitude'] as num?)?.toDouble() ?? 12.9716,
       longitude: (map['longitude'] as num?)?.toDouble() ?? 77.5946,
-      status: EventStatusExtension.fromString(map['status'] as String? ?? 'approved'),
+      status: EventStatus.fromString(map['status'] as String? ?? 'approved'),
       organizerId: map['organizerId'] as String? ?? '',
       organizerName: map['organizerName'] as String? ?? '',
       organizerEmail: map['organizerEmail'] as String? ?? '',
@@ -309,9 +290,7 @@ class EventModel {
               .toList() ??
           [],
       certificateFee: (map['certificateFee'] as num?)?.toDouble() ?? 50.0,
-      createdAt: map['createdAt'] != null
-          ? DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      createdAt: _parseDate(map['createdAt']),
     );
   }
 }

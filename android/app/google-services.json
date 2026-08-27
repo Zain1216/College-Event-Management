@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "882482595825",
+    "project_id": "college-event-managent",
+    "storage_bucket": "college-event-managent.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882482595825:android:5b23cf9521476f0957a650",
+        "android_client_info": {
+          "package_name": "com.aptech.fusionfiesta.fusion_fiesta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnLnUUC1ZaViiVvh9k7y9Yc0yvf2VSlaE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

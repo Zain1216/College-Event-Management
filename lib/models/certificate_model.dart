@@ -1,26 +1,12 @@
 enum CertificateType {
-  participation,
-  winnerFirst,
-  winnerSecond,
-  winnerThird,
-  specialAppreciation,
-}
+  participation('Certificate of Participation'),
+  winnerFirst('Certificate of Excellence (1st Place)'),
+  winnerSecond('Certificate of Merit (2nd Place)'),
+  winnerThird('Certificate of Merit (3rd Place)'),
+  specialAppreciation('Special Appreciation Certificate');
 
-extension CertificateTypeExtension on CertificateType {
-  String get displayName {
-    switch (this) {
-      case CertificateType.participation:
-        return 'Certificate of Participation';
-      case CertificateType.winnerFirst:
-        return 'Certificate of Excellence (1st Place)';
-      case CertificateType.winnerSecond:
-        return 'Certificate of Merit (2nd Place)';
-      case CertificateType.winnerThird:
-        return 'Certificate of Merit (3rd Place)';
-      case CertificateType.specialAppreciation:
-        return 'Special Appreciation Certificate';
-    }
-  }
+  final String displayName;
+  const CertificateType(this.displayName);
 
   static CertificateType fromString(String type) {
     switch (type.toLowerCase()) {
@@ -158,6 +144,28 @@ class CertificateModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? DateTime.now();
+  }
+
+  static DateTime? _parseNullableDate(dynamic val) {
+    if (val == null) return null;
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString());
+  }
+
   factory CertificateModel.fromMap(Map<String, dynamic> map) {
     return CertificateModel(
       id: map['id'] as String? ?? '',
@@ -165,22 +173,18 @@ class CertificateModel {
       eventId: map['eventId'] as String? ?? '',
       eventTitle: map['eventTitle'] as String? ?? '',
       eventCategory: map['eventCategory'] as String? ?? 'Technical',
-      eventDate: map['eventDate'] != null
-          ? DateTime.tryParse(map['eventDate'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      eventDate: _parseDate(map['eventDate']),
       studentId: map['studentId'] as String? ?? '',
       studentName: map['studentName'] as String? ?? '',
       enrollmentNo: map['enrollmentNo'] as String? ?? '',
       department: map['department'] as String? ?? 'General',
-      certificateType: CertificateTypeExtension.fromString(
+      certificateType: CertificateType.fromString(
           map['certificateType'] as String? ?? 'participation'),
       feeAmount: (map['feeAmount'] as num?)?.toDouble() ?? 50.0,
       isFeePaid: map['isFeePaid'] as bool? ?? false,
       transactionId: map['transactionId'] as String?,
-      paidOn: map['paidOn'] != null ? DateTime.tryParse(map['paidOn'].toString()) : null,
-      issuedOn: map['issuedOn'] != null
-          ? DateTime.tryParse(map['issuedOn'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      paidOn: _parseNullableDate(map['paidOn']),
+      issuedOn: _parseDate(map['issuedOn']),
       certificatePdfUrl: map['certificatePdfUrl'] as String?,
       verificationQrData: map['verificationQrData'] as String? ?? '',
       issuedByOrganizer: map['issuedByOrganizer'] as String? ?? 'Event Committee',

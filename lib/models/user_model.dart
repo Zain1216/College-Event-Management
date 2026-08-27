@@ -1,36 +1,12 @@
 enum UserRole {
-  visitor,
-  participant,
-  organizer,
-  admin,
-}
+  visitor('Student Visitor', 'visitor'),
+  participant('Student Participant', 'participant'),
+  organizer('Event Organizer', 'organizer'),
+  admin('Administrator', 'admin');
 
-extension UserRoleExtension on UserRole {
-  String get displayName {
-    switch (this) {
-      case UserRole.visitor:
-        return 'Student Visitor';
-      case UserRole.participant:
-        return 'Student Participant';
-      case UserRole.organizer:
-        return 'Event Organizer';
-      case UserRole.admin:
-        return 'Administrator';
-    }
-  }
-
-  String get key {
-    switch (this) {
-      case UserRole.visitor:
-        return 'visitor';
-      case UserRole.participant:
-        return 'participant';
-      case UserRole.organizer:
-        return 'organizer';
-      case UserRole.admin:
-        return 'admin';
-    }
-  }
+  final String displayName;
+  final String key;
+  const UserRole(this.displayName, this.key);
 
   static UserRole fromString(String role) {
     switch (role.toLowerCase()) {
@@ -55,9 +31,9 @@ class UserModel {
   final String department;
   final String mobile;
   final String? enrollmentNo;
-  final String? collegeIdProof; // URL or document ref
+  final String? collegeIdProof;
   final String? profilePicUrl;
-  final bool isApproved; // For Staff / Organizers
+  final bool isApproved;
   final bool isActive;
   final DateTime createdAt;
   final List<String> bookmarkedEventIds;
@@ -132,12 +108,23 @@ class UserModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? DateTime.now();
+  }
+
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       uid: map['uid'] as String? ?? '',
       email: map['email'] as String? ?? '',
       fullName: map['fullName'] as String? ?? '',
-      role: UserRoleExtension.fromString(map['role'] as String? ?? 'visitor'),
+      role: UserRole.fromString(map['role'] as String? ?? 'visitor'),
       department: map['department'] as String? ?? 'General',
       mobile: map['mobile'] as String? ?? '',
       enrollmentNo: map['enrollmentNo'] as String?,
@@ -145,9 +132,7 @@ class UserModel {
       profilePicUrl: map['profilePicUrl'] as String?,
       isApproved: map['isApproved'] as bool? ?? true,
       isActive: map['isActive'] as bool? ?? true,
-      createdAt: map['createdAt'] != null
-          ? DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      createdAt: _parseDate(map['createdAt']),
       bookmarkedEventIds: (map['bookmarkedEventIds'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??

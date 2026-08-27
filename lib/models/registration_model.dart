@@ -1,20 +1,10 @@
 enum RegistrationStatus {
-  registered,
-  attended,
-  cancelled,
-}
+  registered('Confirmed'),
+  attended('Attended'),
+  cancelled('Cancelled');
 
-extension RegistrationStatusExtension on RegistrationStatus {
-  String get displayName {
-    switch (this) {
-      case RegistrationStatus.registered:
-        return 'Confirmed';
-      case RegistrationStatus.attended:
-        return 'Attended';
-      case RegistrationStatus.cancelled:
-        return 'Cancelled';
-    }
-  }
+  final String displayName;
+  const RegistrationStatus(this.displayName);
 
   static RegistrationStatus fromString(String status) {
     switch (status.toLowerCase()) {
@@ -124,6 +114,17 @@ class RegistrationModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? DateTime.now();
+  }
+
   factory RegistrationModel.fromMap(Map<String, dynamic> map) {
     return RegistrationModel(
       id: map['id'] as String? ?? '',
@@ -131,19 +132,15 @@ class RegistrationModel {
       eventTitle: map['eventTitle'] as String? ?? '',
       eventCategory: map['eventCategory'] as String? ?? 'Technical',
       eventVenue: map['eventVenue'] as String? ?? 'Campus Auditorium',
-      eventDate: map['eventDate'] != null
-          ? DateTime.tryParse(map['eventDate'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      eventDate: _parseDate(map['eventDate']),
       eventTime: map['eventTime'] as String? ?? '',
       studentId: map['studentId'] as String? ?? '',
       studentName: map['studentName'] as String? ?? '',
       studentEmail: map['studentEmail'] as String? ?? '',
       enrollmentNo: map['enrollmentNo'] as String? ?? '',
       department: map['department'] as String? ?? 'General',
-      registeredOn: map['registeredOn'] != null
-          ? DateTime.tryParse(map['registeredOn'].toString()) ?? DateTime.now()
-          : DateTime.now(),
-      status: RegistrationStatusExtension.fromString(map['status'] as String? ?? 'registered'),
+      registeredOn: _parseDate(map['registeredOn']),
+      status: RegistrationStatus.fromString(map['status'] as String? ?? 'registered'),
       qrPassCode: map['qrPassCode'] as String? ?? '',
     );
   }

@@ -1,0 +1,170 @@
+================================================================================
+FUSIONFIESTA - CROSS-PLATFORM COLLEGE EVENT MANAGEMENT SYSTEM
+Software Requirements Specification (SRS) Implementation & Project Documentation
+Competition: TechWiz 6 - Aptech Global Tech Competition
+================================================================================
+
+1. PROBLEM DEFINITION & NECESSITY
+--------------------------------------------------------------------------------
+In modern universities and collegiate institutions, dozens of events such as
+technical hackathons, cultural festivals, band wars, sports tournaments, and
+academic seminars are organized regularly. Managing these activities manually
+leads to significant miscommunication, resource mismanagement, scheduling
+conflicts, paper ticket loss, delayed certificate distributions, and poor
+student engagement.
+
+FusionFiesta resolves these challenges by providing a centralized cross-platform
+system powered by Flutter and Google Firebase. It delivers real-time data
+synchronization, multi-role security, 1-click event registrations, encrypted
+QR pass ticketing, live camera attendance check-ins, automated verified PDF
+certificate generation with fee clearance, multi-criteria feedback collection,
+campus GPS venue navigation, and executive analytics/report exports (PDF/Excel).
+
+
+2. DESIGN SPECIFICATIONS & ARCHITECTURE
+--------------------------------------------------------------------------------
+Architecture Pattern: Multi-Provider Clean Reactive Architecture
+Frontend Framework: Flutter 3.44+ with Dart 3.12+ (Material 3 Design)
+Color Theme: Sapphire Blue (#2563EB), Neon Cyan (#06B6D4), Emerald Green (#10B981),
+             and Amber Gold (#F59E0B) with Midnight Slate (#0F172A). STRICTLY NO PURPLE.
+Backend & Database Engine: Google Cloud Firebase (Cloud Firestore NoSQL, Firebase
+             Authentication, Firebase Storage, and Security Rules).
+State Management: Provider & Reactive Stream Broadcast Controllers.
+Document Rendering: Vector PDF Layout & Printing Engine (pdf & printing packages).
+Analytics & Charts: Interactive Multi-Series Bar & Metric Displays (fl_chart).
+Mapping & Navigation: OpenStreetMap with LatLong2 GPS coordinate integration.
+
+
+3. DATA FLOW DIAGRAMS (DFD)
+--------------------------------------------------------------------------------
+[DFD Level 0 - Context Level Diagram]
+
+  +----------------------+             +---------------------------------------+
+  |                      |             |                                       |
+  |  Student Visitor     |             |         FUSIONFIESTA 2026             |
+  |  Student Participant | <=========> |      CROSS-PLATFORM EVENT             |
+  |  Event Organizer     |             |      MANAGEMENT APPLICATION           |
+  |  System Admin        |             |                                       |
+  +----------------------+             +---------------------------------------+
+                                                      ||   ^^
+                                                      ||   || Live Streams & Writes
+                                                      vv   ||
+                                       +---------------------------------------+
+                                       |      GOOGLE CLOUD FIREBASE            |
+                                       |  • Cloud Firestore NoSQL Database     |
+                                       |  • Firebase Authentication            |
+                                       |  • Firebase Storage & Security Rules  |
+                                       +---------------------------------------+
+
+[DFD Level 1 - Detailed Functional Decomposition]
+
+1.0 AUTHENTICATION & ROLE MANAGEMENT:
+   Users ---> Sign Up / Sign In ---> Firebase Auth / Firestore Users Collection
+   Visitor ---> Profile Upgrade ---> Student Participant (Enrollment ID & ID Proof)
+   Staff ---> Register ---> Admin Approval Queue ---> Account Activated
+
+2.0 EVENT LIFECYCLE & SCHEDULING:
+   Organizer ---> Propose Event (Banner + Guidelines PDF) ---> Status: Pending
+   Admin ---> Review & Approve Proposal ---> Status: Upcoming / Live ---> Public Catalog
+   Participant ---> 1-Click Register ---> Slot Check ---> Generate Digital QR Pass
+
+3.0 LIVE CHECK-IN & ATTENDANCE:
+   Participant ---> Present QR Pass ---> Organizer Camera / Manual Scanner ---> Attendance Marked
+
+4.0 RESULTS, FEEDBACK & CERTIFICATES:
+   Organizer ---> Post Winners ---> Trigger Bulk E-Certificates
+   Participant ---> Multi-Parameter Feedback (Org, Rel, Coord, Overall) ---> Event Rating Updated
+   Participant ---> Fee Payment Clearance ($50.00) ---> Unlocks Vector PDF Certificate Download
+
+5.0 ADMINISTRATIVE GOVERNANCE & REPORTING:
+   Admin ---> Monitor Flagged Feedback & Security Alerts
+   Admin ---> Generate On-Demand Executive PDF & Excel (.xlsx) Reports
+
+
+4. USER ROLES & SYSTEM CREDENTIALS
+--------------------------------------------------------------------------------
+The project is pre-seeded with 4 distinct user accounts for instant evaluation:
+
++---------------------+-------------------------------+------------+-----------------------+
+| Role                | Email Address                 | Password   | User Name             |
++---------------------+-------------------------------+------------+-----------------------+
+| 1. System Admin     | admin@fusionfiesta.edu        | Admin@123  | Dr. Arthur Vance      |
+| 2. Event Organizer  | organizer@fusionfiesta.edu    | Org@123    | Prof. Elena Rostova   |
+| 3. Participant      | student@fusionfiesta.edu      | Student@123| Zain Ahmed            |
+| 4. Student Visitor  | visitor@fusionfiesta.edu      | Visitor@123| Rohan Verma           |
++---------------------+-------------------------------+------------+-----------------------+
+
+Note: A 1-tap "Instant Demo Account Switcher" is built directly into the login
+screen for seamless evaluator testing across all 4 roles with a single click.
+
+
+5. PURE FIREBASE DATABASE DESIGN (FIRESTORE COLLECTIONS)
+--------------------------------------------------------------------------------
+1. users: { uid, email, fullName, role, department, mobile, enrollmentNo, isApproved, isActive }
+2. events: { id, title, description, category, department, date, time, venue, status, organizerId, maxParticipants, registeredCount, bannerUrl, averageRating, isTopRated, certificateFee }
+3. registrations: { id, eventId, studentId, studentName, enrollmentNo, department, registeredOn, status, qrPassCode }
+4. attendance: { id, eventId, studentId, studentName, enrollmentNo, attended, markedOn, checkInMethod, verifiedBy }
+5. feedback: { id, eventId, studentId, studentName, organizationRating, relevanceRating, coordinationRating, overallRating, averageScore, comments, isFlagged }
+6. certificates: { id, certificateNumber, eventId, eventTitle, studentId, studentName, enrollmentNo, certificateType, feeAmount, isFeePaid, transactionId, verificationQrData }
+7. media_gallery: { id, eventId, eventTitle, mediaType, mediaUrl, caption, category, department, uploadedBy, isApproved, isFeatured, likesCount }
+8. notifications: { id, recipientId, recipientRole, title, message, eventId, type, isRead, createdAt }
+9. contact_queries: { id, name, email, subject, category, message, isResolved, adminReply, submittedOn }
+
+
+6. PROJECT INSTALLATION & EXECUTION INSTRUCTIONS
+--------------------------------------------------------------------------------
+Prerequisites:
+- Flutter SDK (Version 3.2.0 or higher) with Dart SDK
+- Google Chrome (for Web testing) OR Android Studio / Emulator (for Android APK)
+
+Step-by-step Setup:
+1. Open the project root directory in terminal.
+2. Run package dependency resolution:
+   $ flutter pub get
+
+3. Run the application in Google Chrome:
+   $ flutter run -d chrome
+
+4. Run the application on Android Emulator/Device:
+   $ flutter run -d android
+
+5. Build Release Android APK:
+   $ flutter build apk --release
+   (The generated APK will be at build/app/outputs/flutter-apk/app-release.apk)
+
+6. Run Unit and Widget Test Suite:
+   $ flutter test
+
+
+7. LIST OF ASSUMPTIONS & DESIGN DECISIONS
+--------------------------------------------------------------------------------
+1. Color Palette: In strict compliance with user instructions, no purple, violet,
+   or magenta colors were used anywhere in the application or assets. The UI uses
+   a high-tech collegiate palette of Sapphire Blue, Neon Cyan, Emerald Green, and
+   Amber Gold.
+2. Certificate Fee Gateway: In accordance with SRS Section 1.4 & 1.6 #6, a simulated
+   instant payment gateway (Credit/Debit Card, UPI / QR, and Campus Student Wallet)
+   is integrated to process the certificate fee prior to unlocking PDF download.
+3. Live Firestore Stream Architecture: All screens bind reactively to Firestore
+   streams, ensuring that when an organizer checks in a student or an admin
+   approves an event, changes reflect immediately on all devices without reload.
+4. Offline Resilience: Built-in local persistence ensures the app functions
+   smoothly even when network connectivity on campus is intermittent.
+
+
+8. VIDEO DEMONSTRATION RECORDING GUIDE (MANDATORY .MP4 SUBMISSION)
+--------------------------------------------------------------------------------
+For the competition submission video (.mp4):
+1. Introduction (0:00 - 0:30): Show App Logo, Title, and Sitemap on Home Screen.
+2. Visitor Flow (0:30 - 1:15): Browse events, search with auto-suggest, view
+   campus map, and demonstrate the "Upgrade to Participant" credential modal.
+3. Participant Flow (1:15 - 2:30): 1-click register for TechNova Hackathon, open
+   My Passes to show digital QR pass, simulate fee payment in Certificate Vault,
+   download vector PDF certificate, and submit 4-parameter feedback rating.
+4. Organizer Flow (2:30 - 3:45): Open Organizer Control Suite, create a new
+   event proposal, demonstrate the interactive QR camera attendance check-in,
+   designate competition winners, and broadcast a push announcement.
+5. Admin Flow (3:45 - 5:00): Open Admin Dashboard, approve pending event proposals,
+   manage user roles, moderate flagged reviews, and export on-demand PDF and
+   Excel (.xlsx) analytics reports.
+================================================================================

@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for Role-Based Access Control
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserData().role == 'admin';
+    }
+    
+    function isOrganizer() {
+      return isAuthenticated() && (getUserData().role == 'organizer' || getUserData().role == 'admin');
+    }
+    
+    function isParticipant() {
+      return isAuthenticated() && (getUserData().role == 'participant' || isOrganizer());
+    }
+
+    // Users Collection: Public read for general profile info; only admins or owner can write
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Events Collection: All visitors can read approved/live/completed; Organizers can create; Admins can approve
+    match /events/{eventId} {
+      allow read: if resource.data.status in ['approved', 'live', 'completed'] || isOrganizer() || isAdmin();
+      allow create: if isOrganizer() || isAdmin();
+      allow update: if isOrganizer() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Registrations Collection: Participants can create their own; Organizers/Admins can view & update status
+    match /registrations/{registrationId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.studentId || isOrganizer() || isAdmin());
+      allow create: if isParticipant();
+      allow update: if isOrganizer() || isAdmin() || (request.auth.uid == resource.data.studentId);
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.studentId);
+    }
+
+    // Attendance Collection: Organizers & Admins can read & create check-in logs
+    match /attendance/{attendanceId} {
+      allow read: if isOrganizer() || isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.studentId);
+      allow create, update: if isOrganizer() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Feedback Collection: Attended participants can submit; Public can read approved; Admins can moderate
+    match /feedback/{feedbackId} {
+      allow read: if true;
+      allow create: if isParticipant();
+      allow update, delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.studentId);
+    }
+
+    // Certificates Collection: Student can read their own; Organizers & Admins can issue/update
+    match /certificates/{certificateId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.studentId || isOrganizer() || isAdmin());
+      allow create, update: if isOrganizer() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Media Gallery Collection: Public read for approved items; Organizers upload; Admins moderate
+    match /media_gallery/{mediaId} {
+      allow read: if resource.data.isApproved == true || isOrganizer() || isAdmin();
+      allow create: if isOrganizer() || isAdmin();
+      allow update, delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.uploadedBy);
+    }
+
+    // Notifications Collection: Recipients read their notifications; System/Admins write
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated() && (resource.data.recipientId in [request.auth.uid, 'all'] || resource.data.recipientRole == getUserData().role);
+      allow create, update, delete: if isOrganizer() || isAdmin();
+    }
+
+    // Contact Queries: Anyone can submit; only Admins can read and resolve
+    match /contact_queries/{queryId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

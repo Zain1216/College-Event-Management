@@ -38,6 +38,17 @@ class AttendanceModel {
     };
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is DateTime) return val;
+    try {
+      if (val.runtimeType.toString() == 'Timestamp') {
+        return (val as dynamic).toDate() as DateTime;
+      }
+    } catch (_) {}
+    return DateTime.tryParse(val.toString()) ?? DateTime.now();
+  }
+
   factory AttendanceModel.fromMap(Map<String, dynamic> map) {
     return AttendanceModel(
       id: map['id'] as String? ?? '',
@@ -47,9 +58,7 @@ class AttendanceModel {
       enrollmentNo: map['enrollmentNo'] as String? ?? '',
       department: map['department'] as String? ?? '',
       attended: map['attended'] as bool? ?? true,
-      markedOn: map['markedOn'] != null
-          ? DateTime.tryParse(map['markedOn'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      markedOn: _parseDate(map['markedOn']),
       checkInMethod: map['checkInMethod'] as String? ?? 'qr_scanner',
       verifiedBy: map['verifiedBy'] as String? ?? '',
     );
