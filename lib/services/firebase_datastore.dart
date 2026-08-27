@@ -843,15 +843,20 @@ class FirebaseDataStore {
     await _notificationsCol.doc(notifId).update({'isRead': true});
   }
 
-  Future<void> markAllNotificationsRead(String userId) async {
+  Future<void> markAllNotificationsRead(String userId, {String userRole = ''}) async {
     final unread = await _notificationsCol
         .where('isRead', isEqualTo: false)
         .get();
 
     final batch = _firestore.batch();
     for (var doc in unread.docs) {
-      final recipient = doc.data()['recipientId'];
-      if (recipient == userId || recipient == 'all') {
+      final data = doc.data();
+      final recipient = data['recipientId'] as String? ?? '';
+      final recipientRole = data['recipientRole'] as String? ?? '';
+      final isForMe = recipient == userId ||
+          recipient == 'all' ||
+          (userRole.isNotEmpty && (recipient == 'role:$userRole' || recipientRole == userRole));
+      if (isForMe) {
         batch.update(doc.reference, {'isRead': true});
       }
     }

@@ -94,7 +94,7 @@ class _NotificationSheetState extends State<NotificationSheet> {
                     ],
                   ),
                   TextButton.icon(
-                    onPressed: () => notifProvider.markAllAsRead(userId),
+                    onPressed: () => notifProvider.markAllAsRead(userId, userRole: userRole),
                     icon: const Icon(Icons.done_all_rounded, size: 16),
                     label: Text('Mark Read', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700)),
                   ),

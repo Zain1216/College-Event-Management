@@ -47,8 +47,8 @@ class NotificationProvider extends ChangeNotifier {
     await _dataStore.markNotificationRead(notifId);
   }
 
-  Future<void> markAllAsRead(String userId) async {
-    await _dataStore.markAllNotificationsRead(userId);
+  Future<void> markAllAsRead(String userId, {String userRole = ''}) async {
+    await _dataStore.markAllNotificationsRead(userId, userRole: userRole);
   }
 
   Future<void> broadcastAnnouncement({

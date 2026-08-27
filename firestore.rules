@@ -35,19 +35,20 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Events Collection: All visitors can read approved/live/completed; Organizers can create; Admins can approve
+    // Events Collection: Participants can read all events; Organizers can create/update; Admins can approve
     match /events/{eventId} {
-      allow read: if resource.data.status in ['approved', 'live', 'completed'] || isOrganizer() || isAdmin();
+      allow read: if isParticipant() || resource.data.status in ['approved', 'live', 'completed'] || isOrganizer() || isAdmin();
       allow create: if isOrganizer() || isAdmin();
-      allow update: if isOrganizer() || isAdmin();
+      // Participants allowed to update to increment registeredCount on registration
+      allow update: if isOrganizer() || isAdmin() || isParticipant();
       allow delete: if isAdmin();
     }
 
     // Registrations Collection: Participants can create their own; Organizers/Admins can view & update status
     match /registrations/{registrationId} {
-      allow read: if isAuthenticated() && (request.auth.uid == resource.data.studentId || isOrganizer() || isAdmin());
+      allow read: if isAuthenticated() && (isParticipant() || isOrganizer() || isAdmin());
       allow create: if isParticipant();
-      allow update: if isOrganizer() || isAdmin() || (request.auth.uid == resource.data.studentId);
+      allow update: if isOrganizer() || isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.studentId);
       allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.studentId);
     }
 
@@ -79,10 +80,16 @@ service cloud.firestore {
       allow update, delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.uploadedBy);
     }
 
-    // Notifications Collection: Recipients read their notifications; System/Admins write
+    // Notifications Collection: Recipients read their notifications; any authenticated user can create (needed for registration approval flow)
     match /notifications/{notifId} {
-      allow read: if isAuthenticated() && (resource.data.recipientId in [request.auth.uid, 'all'] || resource.data.recipientRole == getUserData().role);
-      allow create, update, delete: if isOrganizer() || isAdmin();
+      allow read: if isAuthenticated() && (
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.recipientId == 'all' ||
+        (userDocExists() && resource.data.recipientId == 'role:' + getUserData().role) ||
+        (userDocExists() && resource.data.recipientRole == getUserData().role)
+      );
+      allow create: if isAuthenticated();
+      allow update, delete: if isOrganizer() || isAdmin();
     }
 
     // Contact Queries: Anyone can submit; only Admins can read and resolve
