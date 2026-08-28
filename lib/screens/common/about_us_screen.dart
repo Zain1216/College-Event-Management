@@ -110,12 +110,12 @@ class AboutUsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton(
+                  GlassButton(
+                    label: 'Sitemap',
+                    icon: Icons.account_tree_outlined,
+                    height: 38,
+                    borderRadius: 12,
                     onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SitemapScreen())),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    child: Text('Sitemap', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),

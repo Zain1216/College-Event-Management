@@ -73,21 +73,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ],
                 const SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await context.read<AuthProvider>().updateProfile(
-                              fullName: nameController.text.trim(),
-                              mobile: mobileController.text.trim(),
-                              department: deptController.text.trim(),
-                              enrollmentNo: enrollmentController.text.trim().isNotEmpty ? enrollmentController.text.trim() : null,
-                            );
-                        if (ctx.mounted) Navigator.pop(ctx);
-                      },
-                      child: const Text('Save Changes'),
+                    Expanded(
+                      child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: GlassButton(
+                        label: 'Save Changes',
+                        icon: Icons.check_rounded,
+                        height: 44,
+                        onPressed: () async {
+                          await context.read<AuthProvider>().updateProfile(
+                                fullName: nameController.text.trim(),
+                                mobile: mobileController.text.trim(),
+                                department: deptController.text.trim(),
+                                enrollmentNo: enrollmentController.text.trim().isNotEmpty ? enrollmentController.text.trim() : null,
+                              );
+                          if (ctx.mounted) Navigator.pop(ctx);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -132,36 +138,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
               const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final newPass = newPassController.text.trim();
-                      if (newPass.length < 6) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(backgroundColor: AppColors.error, content: Text('Password must be at least 6 characters.')),
-                        );
-                        return;
-                      }
-                      try {
-                        await context.read<AuthProvider>().changePassword(newPass);
-                        if (ctx.mounted) {
-                          Navigator.pop(ctx);
+                  Expanded(
+                    child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: GlassButton(
+                      label: 'Update Password',
+                      icon: Icons.check_rounded,
+                      height: 44,
+                      onPressed: () async {
+                        final newPass = newPassController.text.trim();
+                        if (newPass.length < 6) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(backgroundColor: AppColors.statusLive, content: Text('✅ Password updated successfully in Firebase Auth.')),
+                            const SnackBar(backgroundColor: AppColors.error, content: Text('Password must be at least 6 characters.')),
                           );
+                          return;
                         }
-                      } catch (e) {
-                        if (ctx.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(backgroundColor: AppColors.error, content: Text(e.toString().replaceAll('Exception: ', ''))),
-                          );
+                        try {
+                          await context.read<AuthProvider>().changePassword(newPass);
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(backgroundColor: AppColors.statusLive, content: Text('✅ Password updated successfully in Firebase Auth.')),
+                            );
+                          }
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(backgroundColor: AppColors.error, content: Text(e.toString().replaceAll('Exception: ', ''))),
+                            );
+                          }
                         }
-                      }
-                    },
-                    child: const Text('Update Password'),
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -193,20 +205,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       appBar: AppBar(
         title: Text('My Profile & Settings', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
         actions: [
-          IconButton(
+          GlassIconButton(
             tooltip: 'Edit Profile',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.8)),
-              ),
-              child: const Icon(Icons.edit_rounded, color: AppColors.primary, size: 18),
-            ),
+            icon: Icons.edit_rounded,
+            iconColor: AppColors.primary,
+            size: 38,
+            iconSize: 18,
             onPressed: () => _showEditProfileDialog(context, user),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: SingleChildScrollView(
@@ -294,17 +301,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   // Upgrade button if visitor
                   if (user.role == UserRole.visitor) ...[
                     const SizedBox(height: 14),
-                    ElevatedButton.icon(
+                    GlassButton(
+                      label: 'Upgrade to Student Participant',
+                      icon: Icons.upgrade_rounded,
+                      color: AppColors.statusLive,
+                      height: 42,
                       onPressed: () => RoleUpgradeDialog.show(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.statusLive,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      ),
-                      icon: const Icon(Icons.upgrade_rounded, size: 18),
-                      label: Text(
-                        'Upgrade to Student Participant',
-                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800),
-                      ),
                     ),
                   ],
                 ],
@@ -447,21 +449,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             const SizedBox(height: 24),
 
             // Logout Button
-            SizedBox(
-              width: double.infinity,
+            GlassButton(
+              label: 'Sign Out',
+              icon: Icons.logout_rounded,
+              isPrimary: false,
+              color: AppColors.error,
               height: 48,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  await auth.logout();
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                  side: const BorderSide(color: AppColors.error, width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                label: Text('Sign Out', style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
-              ),
+              onPressed: () async {
+                await auth.logout();
+              },
             ),
 
             const SizedBox(height: 30),

@@ -39,45 +39,38 @@ class AdminDashboard extends StatelessWidget {
       appBar: AppBar(
         title: Text('Admin Operations & Control', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
         actions: [
-          IconButton(
+          GlassIconButton(
             tooltip: 'App Sitemap & Flow',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.8)),
-              ),
-              child: const Icon(Icons.account_tree_outlined, color: AppColors.primary, size: 20),
-            ),
+            icon: Icons.account_tree_outlined,
+            iconColor: AppColors.primary,
+            size: 38,
+            iconSize: 18,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SitemapScreen())),
           ),
+
+          const SizedBox(width: 8),
           Stack(
+            clipBehavior: Clip.none,
             children: [
-              IconButton(
+              GlassIconButton(
                 tooltip: 'Notifications',
-                icon: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.6),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.8)),
-                  ),
-                  child: const Icon(Icons.notifications_outlined, color: AppColors.primary, size: 20),
-                ),
+                icon: Icons.notifications_outlined,
+                iconColor: AppColors.primary,
+                size: 38,
+                iconSize: 18,
                 onPressed: () => NotificationSheet.show(context),
               ),
               if (unreadNotifs > 0)
                 Positioned(
-                  right: 8,
-                  top: 6,
+                  right: 0,
+                  top: -2,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.error,
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
-                        BoxShadow(color: AppColors.error.withOpacity(0.4), blurRadius: 6),
+                        BoxShadow(color: AppColors.error.withOpacity(0.5), blurRadius: 6),
                       ],
                     ),
                     child: Text(
@@ -88,7 +81,7 @@ class AdminDashboard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: SingleChildScrollView(
@@ -443,3 +436,5 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 }
+
+

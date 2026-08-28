@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/glass_widgets.dart';
+import '../../utils/app_validators.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -149,7 +150,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       controller: _nameController,
                       labelText: 'Your Name *',
                       prefixIcon: Icons.person_outline_rounded,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                      validator: (v) => AppValidators.requiredField(v, 'Name'),
                     ),
                     const SizedBox(height: 12),
 
@@ -158,32 +159,25 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       controller: _emailController,
                       labelText: 'Email Address *',
                       prefixIcon: Icons.email_outlined,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Email is required' : null,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: AppValidators.email,
                     ),
                     const SizedBox(height: 12),
 
                     // Category
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.72),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButtonFormField<String>(
-                          value: _category,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            labelText: 'Inquiry Category',
-                            prefixIcon: Icon(Icons.category_outlined, color: AppColors.primary),
-                          ),
-                          items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)))).toList(),
-                          onChanged: (val) {
-                            if (val != null) setState(() => _category = val);
-                          },
-                        ),
-                      ),
+                    GlassDropdown<String>(
+                      value: _category,
+                      labelText: 'Inquiry Category',
+                      prefixIcon: Icons.category_outlined,
+                      items: _categories
+                          .map((c) => DropdownMenuItem(
+                                value: c,
+                                child: Text(c, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _category = val);
+                      },
                     ),
                     const SizedBox(height: 12),
 
@@ -192,7 +186,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       controller: _subjectController,
                       labelText: 'Subject Headline *',
                       prefixIcon: Icons.title_rounded,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Subject is required' : null,
+                      validator: (v) => AppValidators.requiredField(v, 'Subject'),
                     ),
                     const SizedBox(height: 12),
 
@@ -202,8 +196,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       maxLines: 4,
                       labelText: 'Message & Details *',
                       hintText: 'Please describe your question or technical issue...',
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Message is required' : null,
+                      validator: (v) => AppValidators.requiredField(v, 'Message'),
                     ),
+
                     const SizedBox(height: 18),
 
                     GlassButton(

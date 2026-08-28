@@ -176,16 +176,32 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
+          disabledBackgroundColor: const Color(0xFFCBD5E1),
+          disabledForegroundColor: const Color(0xFF94A3B8),
           elevation: 2,
           shadowColor: AppColors.primary.withOpacity(0.35),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.inter(
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.2,
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -193,14 +209,39 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.inter(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
           ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: AppColors.textPrimaryLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -285,6 +326,77 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
           side: const BorderSide(color: AppColors.borderDark, width: 1),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryLight,
+          foregroundColor: AppColors.backgroundDark,
+          disabledBackgroundColor: const Color(0xFF334155),
+          disabledForegroundColor: const Color(0xFF64748B),
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primaryLight,
+          foregroundColor: AppColors.backgroundDark,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primaryLight,
+          side: const BorderSide(color: AppColors.primaryLight, width: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primaryLight,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primaryLight,
+        foregroundColor: AppColors.backgroundDark,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: AppColors.textPrimaryDark,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );

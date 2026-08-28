@@ -97,13 +97,14 @@ class _ContentModerationScreenState extends State<ContentModerationScreen> with 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        TextButton.icon(
+                        GlassButton(
+                          label: fb.isFlagged ? 'Mark as Approved & Safe' : 'Flag as Inappropriate',
+                          icon: fb.isFlagged ? Icons.check_circle_rounded : Icons.flag_outlined,
+                          color: fb.isFlagged ? AppColors.statusLive : AppColors.error,
+                          isPrimary: false,
+                          height: 36,
+                          borderRadius: 10,
                           onPressed: () => feedbackProvider.toggleFeedbackFlag(fb.id, !fb.isFlagged),
-                          icon: Icon(fb.isFlagged ? Icons.check_circle_rounded : Icons.flag_outlined, size: 15, color: fb.isFlagged ? AppColors.statusLive : AppColors.error),
-                          label: Text(
-                            fb.isFlagged ? 'Mark as Approved & Safe' : 'Flag as Inappropriate',
-                            style: GoogleFonts.inter(fontSize: 11.5, color: fb.isFlagged ? AppColors.statusLive : AppColors.error, fontWeight: FontWeight.w800),
-                          ),
                         ),
                       ],
                     ),
@@ -166,8 +167,11 @@ class _ContentModerationScreenState extends State<ContentModerationScreen> with 
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                    GlassIconButton(
+                      icon: Icons.delete_outline_rounded,
+                      iconColor: AppColors.error,
+                      size: 38,
+                      iconSize: 18,
                       onPressed: () => mediaProvider.deleteMedia(media.id),
                     ),
                   ],

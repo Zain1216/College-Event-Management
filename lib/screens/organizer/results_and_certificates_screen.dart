@@ -143,23 +143,18 @@ class _ResultsAndCertificatesScreenState extends State<ResultsAndCertificatesScr
                 children: [
                   Text('Select Event to Finalize Results', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryLight)),
                   const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.72),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButtonFormField<String>(
-                        value: myEvents.any((e) => e.id == _selectedEventId) ? _selectedEventId : null,
-                        decoration: const InputDecoration(border: InputBorder.none),
-                        items: myEvents.map((e) => DropdownMenuItem(value: e.id, child: Text(e.title, style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis))).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedEventId = val);
-                        },
-                      ),
-                    ),
+                  GlassDropdown<String>(
+                    value: myEvents.any((e) => e.id == _selectedEventId) ? _selectedEventId : (myEvents.isNotEmpty ? myEvents.first.id : null),
+                    prefixIcon: Icons.event_rounded,
+                    items: myEvents
+                        .map((e) => DropdownMenuItem(
+                              value: e.id,
+                              child: Text(e.title, style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedEventId = val);
+                    },
                   ),
                 ],
               ),

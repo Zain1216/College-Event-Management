@@ -147,7 +147,8 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Calculated Average Score', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
+                    Expanded(child: Text('Calculated Average Score', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13))),
+                    const SizedBox(width: 8),
                     Row(
                       children: [
                         const Icon(Icons.star_rounded, color: AppColors.accentGold, size: 22),

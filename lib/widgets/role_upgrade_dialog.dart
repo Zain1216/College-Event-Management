@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/app_validators.dart';
 import 'glass_widgets.dart';
 
 class RoleUpgradeDialog extends StatefulWidget {
@@ -183,7 +184,7 @@ class _RoleUpgradeDialogState extends State<RoleUpgradeDialog> {
                   controller: _enrollmentController,
                   hintText: 'e.g. CS-2024-001',
                   prefixIcon: Icons.badge_outlined,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Enrollment number is required' : null,
+                  validator: AppValidators.enrollmentNo,
                 ),
 
                 const SizedBox(height: 14),
@@ -191,26 +192,18 @@ class _RoleUpgradeDialogState extends State<RoleUpgradeDialog> {
                 // Department Selector
                 Text('Academic Department *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.72),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButtonFormField<String>(
-                      value: _departments.contains(_departmentController.text) ? _departmentController.text : _departments.first,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        prefixIcon: Icon(Icons.domain_rounded, color: AppColors.primary, size: 20),
-                      ),
-                      items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600)))).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _departmentController.text = val);
-                      },
-                    ),
-                  ),
+                GlassDropdown<String>(
+                  value: _departments.contains(_departmentController.text) ? _departmentController.text : _departments.first,
+                  prefixIcon: Icons.domain_rounded,
+                  items: _departments
+                      .map((d) => DropdownMenuItem(
+                            value: d,
+                            child: Text(d, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _departmentController.text = val);
+                  },
                 ),
 
                 const SizedBox(height: 14),
@@ -223,8 +216,13 @@ class _RoleUpgradeDialogState extends State<RoleUpgradeDialog> {
                   hintText: 'e.g. +92 300 1234567',
                   prefixIcon: Icons.phone_android_rounded,
                   keyboardType: TextInputType.phone,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Mobile number is required' : null,
+                  validator: (v) {
+                    final req = AppValidators.requiredField(v, 'Mobile number');
+                    if (req != null) return req;
+                    return AppValidators.phone(v);
+                  },
                 ),
+
 
                 const SizedBox(height: 14),
 

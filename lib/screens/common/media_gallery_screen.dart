@@ -216,20 +216,15 @@ class _MediaGalleryScreenState extends State<MediaGalleryScreen> {
         title: Text('Campus Media Gallery', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
         actions: [
           if (isStaff)
-            IconButton(
+            GlassIconButton(
               tooltip: 'Upload Media',
-              icon: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.6),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.8)),
-                ),
-                child: const Icon(Icons.add_a_photo_rounded, color: AppColors.primary, size: 18),
-              ),
+              icon: Icons.add_a_photo_rounded,
+              iconColor: AppColors.primary,
+              size: 38,
+              iconSize: 18,
               onPressed: () => _showUploadSheet(context),
             ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: Column(

@@ -255,27 +255,44 @@ class _PaymentModalState extends State<PaymentModal> {
     return Expanded(
       child: InkWell(
         onTap: () => setState(() => _selectedMethod = name),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             gradient: isSelected ? AppColors.heroGradient : null,
-            color: isSelected ? null : Colors.white.withOpacity(0.65),
-            borderRadius: BorderRadius.circular(14),
+            color: isSelected ? null : Colors.white.withOpacity(0.70),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? Colors.white.withOpacity(0.6) : Colors.white.withOpacity(0.8),
-              width: 1.2,
+              color: isSelected ? Colors.white.withOpacity(0.4) : Colors.white.withOpacity(0.85),
+              width: isSelected ? 1.5 : 1,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.32),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, color: isSelected ? Colors.white : AppColors.primary, size: 20),
-              const SizedBox(height: 4),
+              const SizedBox(height: 5),
               Text(
                 name,
                 style: GoogleFonts.inter(
-                  fontSize: 11,
+                  fontSize: 11.5,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   color: isSelected ? Colors.white : AppColors.textPrimaryLight,
                 ),

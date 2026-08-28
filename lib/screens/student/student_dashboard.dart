@@ -66,45 +66,37 @@ class StudentDashboard extends StatelessWidget {
       appBar: AppBar(
         title: const AppLogo(size: 34),
         actions: [
-          IconButton(
+          GlassIconButton(
             tooltip: 'App Sitemap & Flow',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.8)),
-              ),
-              child: const Icon(Icons.account_tree_outlined, color: AppColors.primary, size: 20),
-            ),
+            icon: Icons.account_tree_outlined,
+            iconColor: AppColors.primary,
+            size: 38,
+            iconSize: 18,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SitemapScreen())),
           ),
+          const SizedBox(width: 8),
           Stack(
+            clipBehavior: Clip.none,
             children: [
-              IconButton(
+              GlassIconButton(
                 tooltip: 'Notifications',
-                icon: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.6),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.8)),
-                  ),
-                  child: const Icon(Icons.notifications_outlined, color: AppColors.primary, size: 20),
-                ),
+                icon: Icons.notifications_outlined,
+                iconColor: AppColors.primary,
+                size: 38,
+                iconSize: 18,
                 onPressed: () => NotificationSheet.show(context),
               ),
               if (unreadNotifs > 0)
                 Positioned(
-                  right: 8,
-                  top: 6,
+                  right: 0,
+                  top: -2,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.error,
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
-                        BoxShadow(color: AppColors.error.withOpacity(0.4), blurRadius: 6),
+                        BoxShadow(color: AppColors.error.withOpacity(0.5), blurRadius: 6),
                       ],
                     ),
                     child: Text(
@@ -115,7 +107,7 @@ class StudentDashboard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: RefreshIndicator(
@@ -196,20 +188,13 @@ class StudentDashboard extends StatelessWidget {
                             ),
                             if (isVisitor) ...[
                               const SizedBox(height: 14),
-                              ElevatedButton.icon(
+                              GlassButton(
+                                label: 'Upgrade to Student Participant',
+                                icon: Icons.upgrade_rounded,
+                                isPrimary: false,
+                                height: 44,
+                                color: AppColors.primary,
                                 onPressed: () => RoleUpgradeDialog.show(context),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: AppColors.primary,
-                                  elevation: 2,
-                                  shadowColor: Colors.black26,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                ),
-                                icon: const Icon(Icons.upgrade_rounded, size: 18),
-                                label: Text(
-                                  'Upgrade to Student Participant',
-                                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 13),
-                                ),
                               ),
                             ],
                           ],

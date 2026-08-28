@@ -111,12 +111,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Great!'),
-                    ),
+                  GlassButton(
+                    label: 'Great! View Pass',
+                    icon: Icons.check_rounded,
+                    height: 44,
+                    onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
               ),
@@ -537,8 +536,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                     children: [
                                       Text(w.rank == 1 ? '🥇' : (w.rank == 2 ? '🥈' : '🥉'), style: const TextStyle(fontSize: 18)),
                                       const SizedBox(width: 8),
-                                      Text(w.studentName, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
-                                      const Spacer(),
+                                      Expanded(
+                                        child: Text(
+                                          w.studentName,
+                                          style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
                                       Text(w.prizeTitle, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
                                     ],
                                   ),
@@ -569,10 +574,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               style: GoogleFonts.inter(fontSize: 12, color: AppColors.deepNavy),
                             ),
                             const SizedBox(height: 12),
-                            ElevatedButton.icon(
+                            GlassButton(
+                              label: 'Submit 4-Parameter Rating',
+                              icon: Icons.star_rounded,
+                              isPrimary: false,
+                              color: AppColors.accentGold,
+                              height: 42,
                               onPressed: () => FeedbackDialog.show(context, widget.event),
-                              icon: const Icon(Icons.star_rounded, size: 16),
-                              label: const Text('Submit 4-Parameter Rating'),
                             ),
                           ],
                         ),
@@ -607,22 +615,25 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               ),
               child: SafeArea(
                 child: isRegistered
-                    ? OutlinedButton.icon(
+                    ? GlassButton(
+                        label: 'Registered • View Pass in My Passes',
+                        icon: Icons.check_circle_rounded,
+                        isPrimary: false,
+                        color: AppColors.statusLive,
+                        height: 50,
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('You are already registered. Access pass in My Passes.')),
+                            const SnackBar(content: Text('You are already registered. Access your QR pass in My Passes.')),
                           );
                         },
-                        icon: const Icon(Icons.check_circle_rounded, color: AppColors.statusLive),
-                        label: Text('Registered • View Pass in Tab', style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
                       )
                     : GlassButton(
                         label: event.isFull
-                            ? 'Event Full'
+                            ? 'Event Full (Registrations Closed)'
                             : (user?.role.key == 'visitor'
                                 ? 'Upgrade Profile & Register'
                                 : '1-Click Register for Event'),
-                        icon: Icons.touch_app_rounded,
+                        icon: event.isFull ? Icons.block_rounded : Icons.touch_app_rounded,
                         isLoading: _isRegistering,
                         onPressed: (_isRegistering || event.isFull)
                             ? null
@@ -649,15 +660,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           child: Icon(icon, size: 18, color: AppColors.primary),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
-            Text(value, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
+              Text(value, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
         if (trailing != null) ...[
-          const Spacer(),
+          const SizedBox(width: 8),
           trailing,
         ],
       ],

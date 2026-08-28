@@ -35,20 +35,26 @@ class EventApprovalScreen extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-                    onPressed: () async {
-                      final reason = reasonController.text.trim().isEmpty
-                          ? 'Event proposal did not meet current university scheduling guidelines.'
-                          : reasonController.text.trim();
-                      await provider.rejectEvent(event.id, reason);
-                      if (ctx.mounted) Navigator.pop(ctx);
-                    },
-                    child: const Text('Reject Proposal'),
+                  Expanded(
+                    child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: GlassButton(
+                      label: 'Reject Proposal',
+                      icon: Icons.block_rounded,
+                      color: AppColors.error,
+                      height: 42,
+                      onPressed: () async {
+                        final reason = reasonController.text.trim().isEmpty
+                            ? 'Event proposal did not meet current university scheduling guidelines.'
+                            : reasonController.text.trim();
+                        await provider.rejectEvent(event.id, reason);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -206,20 +212,22 @@ class EventApprovalScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: GlassButton(
+                  label: 'Decline',
+                  icon: Icons.close_rounded,
+                  isPrimary: false,
+                  color: AppColors.error,
+                  height: 44,
                   onPressed: () => _showRejectDialog(context, event, provider),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error, width: 1.2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.close_rounded, size: 16),
-                  label: const Text('Decline'),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton.icon(
+                child: GlassButton(
+                  label: 'Approve Event',
+                  icon: Icons.check_rounded,
+                  color: AppColors.statusLive,
+                  height: 44,
                   onPressed: () async {
                     await provider.approveEvent(event.id);
                     if (context.mounted) {
@@ -231,12 +239,6 @@ class EventApprovalScreen extends StatelessWidget {
                       );
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.statusLive,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.check_rounded, size: 16),
-                  label: const Text('Approve Event'),
                 ),
               ),
             ],

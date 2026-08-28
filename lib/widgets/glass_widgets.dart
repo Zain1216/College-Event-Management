@@ -313,8 +313,8 @@ class GlassMetricCard extends StatelessWidget {
   }
 }
 
-/// Frosted Glass Interactive Button
-class GlassButton extends StatelessWidget {
+/// High-Performance Frosted Glass Interactive Button with Tactile Feedback
+class GlassButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
@@ -322,7 +322,10 @@ class GlassButton extends StatelessWidget {
   final bool isLoading;
   final Color? color;
   final double height;
+  final double? width;
   final double borderRadius;
+  final EdgeInsetsGeometry? padding;
+  final TextStyle? textStyle;
 
   const GlassButton({
     super.key,
@@ -333,84 +336,247 @@ class GlassButton extends StatelessWidget {
     this.isLoading = false,
     this.color,
     this.height = 48,
+    this.width,
     this.borderRadius = 14,
+    this.padding,
+    this.textStyle,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final effectiveColor = color ?? (isPrimary ? AppColors.primary : AppColors.secondaryDark);
+  State<GlassButton> createState() => _GlassButtonState();
+}
 
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        gradient: isPrimary ? AppColors.heroGradient : null,
-        color: isPrimary ? null : effectiveColor.withOpacity(0.12),
-        border: Border.all(
-          color: isPrimary ? Colors.white.withOpacity(0.35) : effectiveColor.withOpacity(0.4),
-          width: 1.2,
+class _GlassButtonState extends State<GlassButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isEnabled = widget.onPressed != null && !widget.isLoading;
+    final effectiveColor = widget.color ?? (widget.isPrimary ? AppColors.primary : (isDark ? AppColors.secondaryLight : AppColors.primary));
+
+    // Colors according to state
+    Color textColor;
+    Color iconColor;
+    Gradient? backgroundGradient;
+    Color? backgroundColor;
+    List<BoxShadow>? shadows;
+    Border border;
+
+    if (!isEnabled && !widget.isLoading) {
+      // Disabled state
+      textColor = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+      iconColor = textColor;
+      backgroundGradient = null;
+      backgroundColor = isDark ? const Color(0xFF1E293B).withOpacity(0.5) : const Color(0xFFE2E8F0).withOpacity(0.7);
+      shadows = null;
+      border = Border.all(
+        color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.06),
+        width: 1,
+      );
+    } else if (widget.isPrimary) {
+      // Primary state
+      textColor = Colors.white;
+      iconColor = Colors.white;
+      backgroundGradient = widget.color != null
+          ? LinearGradient(
+              colors: [widget.color!, widget.color!.withOpacity(0.85)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            )
+          : AppColors.heroGradient;
+      backgroundColor = null;
+      shadows = [
+        BoxShadow(
+          color: (widget.color ?? AppColors.primary).withOpacity(isDark ? 0.40 : 0.28),
+          blurRadius: 14,
+          offset: const Offset(0, 4),
         ),
-        boxShadow: isPrimary
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.35),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: isLoading ? null : onPressed,
-              borderRadius: BorderRadius.circular(borderRadius),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Center(
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.2,
-                          ),
-                        )
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (icon != null) ...[
-                              Icon(
-                                icon,
-                                size: 18,
-                                color: isPrimary ? Colors.white : effectiveColor,
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            Text(
-                              label,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: isPrimary ? Colors.white : effectiveColor,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                          ],
+      ];
+      border = Border.all(
+        color: Colors.white.withOpacity(0.35),
+        width: 1.2,
+      );
+    } else {
+      // Secondary / Frosted Outline state
+      textColor = effectiveColor;
+      iconColor = effectiveColor;
+      backgroundGradient = null;
+      backgroundColor = isDark
+          ? const Color(0xFF0F172A).withOpacity(0.7)
+          : Colors.white.withOpacity(0.85);
+      shadows = [
+        BoxShadow(
+          color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ];
+      border = Border.all(
+        color: effectiveColor.withOpacity(0.45),
+        width: 1.3,
+      );
+    }
+
+    return AnimatedScale(
+      scale: _isPressed && isEnabled ? 0.97 : 1.0,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeOutCubic,
+      child: Container(
+        height: widget.height,
+        width: widget.width,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          gradient: backgroundGradient,
+          color: backgroundColor,
+          border: border,
+          boxShadow: shadows,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          child: InkWell(
+            onTap: isEnabled ? widget.onPressed : null,
+            onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
+            onTapUp: isEnabled ? (_) => setState(() => _isPressed = false) : null,
+            onTapCancel: isEnabled ? () => setState(() => _isPressed = false) : null,
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            splashColor: widget.isPrimary ? Colors.white.withOpacity(0.2) : effectiveColor.withOpacity(0.15),
+            highlightColor: widget.isPrimary ? Colors.white.withOpacity(0.1) : effectiveColor.withOpacity(0.08),
+            child: Padding(
+              padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 18),
+              child: Center(
+                child: widget.isLoading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: widget.isPrimary ? Colors.white : effectiveColor,
+                          strokeWidth: 2.2,
                         ),
-                ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (widget.icon != null) ...[
+                            Icon(
+                              widget.icon,
+                              size: 18,
+                              color: iconColor,
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Flexible(
+                            child: Text(
+                              widget.label,
+                              style: widget.textStyle ??
+                                  GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                    letterSpacing: 0.2,
+                                  ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// Frosted Glass Rounded Icon Button
+class GlassIconButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final Color? iconColor;
+  final Color? backgroundColor;
+  final double size;
+  final double iconSize;
+  final String? tooltip;
+
+  const GlassIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.iconColor,
+    this.backgroundColor,
+    this.size = 40,
+    this.iconSize = 20,
+    this.tooltip,
+  });
+
+  @override
+  State<GlassIconButton> createState() => _GlassIconButtonState();
+}
+
+class _GlassIconButtonState extends State<GlassIconButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isEnabled = widget.onPressed != null;
+    final effIconColor = widget.iconColor ?? (isDark ? Colors.white : AppColors.primary);
+
+    Widget button = AnimatedScale(
+      scale: _isPressed && isEnabled ? 0.92 : 1.0,
+      duration: const Duration(milliseconds: 100),
+      child: Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: widget.backgroundColor ??
+              (isDark
+                  ? const Color(0xFF0F172A).withOpacity(0.65)
+                  : Colors.white.withOpacity(0.75)),
+          border: Border.all(
+            color: isDark ? Colors.white.withOpacity(0.18) : Colors.white.withOpacity(0.9),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: isEnabled ? widget.onPressed : null,
+            onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
+            onTapUp: isEnabled ? (_) => setState(() => _isPressed = false) : null,
+            onTapCancel: isEnabled ? () => setState(() => _isPressed = false) : null,
+            splashColor: effIconColor.withOpacity(0.18),
+            highlightColor: effIconColor.withOpacity(0.08),
+            child: Center(
+              child: Icon(
+                widget.icon,
+                size: widget.iconSize,
+                color: isEnabled ? effIconColor : effIconColor.withOpacity(0.4),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (widget.tooltip != null) {
+      return Tooltip(message: widget.tooltip!, child: button);
+    }
+    return button;
   }
 }
 
@@ -496,6 +662,7 @@ class GlassTextField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final TextInputType? keyboardType;
   final int maxLines;
+  final AutovalidateMode? autovalidateMode;
 
   const GlassTextField({
     super.key,
@@ -509,6 +676,7 @@ class GlassTextField extends StatelessWidget {
     this.validator,
     this.keyboardType,
     this.maxLines = 1,
+    this.autovalidateMode,
   });
 
   @override
@@ -540,6 +708,7 @@ class GlassTextField extends StatelessWidget {
             obscureText: obscureText,
             onChanged: onChanged,
             validator: validator,
+            autovalidateMode: autovalidateMode ?? (validator != null ? AutovalidateMode.onUserInteraction : null),
             keyboardType: keyboardType,
             maxLines: maxLines,
             style: GoogleFonts.inter(
@@ -551,17 +720,114 @@ class GlassTextField extends StatelessWidget {
               hintText: hintText,
               labelText: labelText,
               filled: false,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              isDense: true,
+              prefixIconConstraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+              suffixIconConstraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
               errorBorder: InputBorder.none,
+              focusedErrorBorder: InputBorder.none,
+              errorStyle: GoogleFonts.inter(
+                color: AppColors.error,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
               prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppColors.primary, size: 20) : null,
               suffixIcon: suffixIcon,
               hintStyle: GoogleFonts.inter(
                 color: AppColors.textMutedLight,
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Frosted Glass Overflow-Safe Dropdown
+class GlassDropdown<T> extends StatelessWidget {
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?>? onChanged;
+  final String? hintText;
+  final String? labelText;
+  final IconData? prefixIcon;
+  final FormFieldValidator<T>? validator;
+  final double borderRadius;
+
+  const GlassDropdown({
+    super.key,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    this.hintText,
+    this.labelText,
+    this.prefixIcon,
+    this.validator,
+    this.borderRadius = 16,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0F172A).withOpacity(0.55) : Colors.white.withOpacity(0.72),
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(
+              color: isDark ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.85),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButtonFormField<T>(
+              value: value,
+              items: items,
+              onChanged: onChanged,
+              validator: validator,
+              isExpanded: true,
+              isDense: true,
+              icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 24),
+              dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : AppColors.textPrimaryLight,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText,
+                labelText: labelText,
+                filled: false,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppColors.primary, size: 20) : null,
+                errorStyle: GoogleFonts.inter(
+                  color: AppColors.error,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

@@ -23,7 +23,7 @@ dependencies:
   shared_preferences: ^2.3.2
 
   # Date, Time & Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   uuid: ^4.5.1
   crypto: ^3.0.5
 
@@ -48,6 +48,9 @@ dependencies:
   # Typography
   google_fonts: ^6.2.1
 
+  # Responsive Device Preview for Testing
+  device_preview: ^1.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -65,3 +68,6 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/logo.jpg
+
+

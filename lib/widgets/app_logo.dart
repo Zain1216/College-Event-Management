@@ -44,17 +44,28 @@ class AppLogo extends StatelessWidget {
           child: ClipOval(
             child: Image.asset(
               'assets/images/logo.jpg',
+              width: size,
+              height: size,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
+                  width: size,
+                  height: size,
                   decoration: const BoxDecoration(
                     gradient: AppColors.heroGradient,
                   ),
-                  child: const Icon(Icons.celebration_rounded, color: Colors.white, size: 24),
+                  child: Center(
+                    child: Icon(
+                      Icons.celebration_rounded,
+                      color: Colors.white,
+                      size: size * 0.5,
+                    ),
+                  ),
                 );
               },
             ),
           ),
+
         ),
         if (showText) ...[
           const SizedBox(width: 10),

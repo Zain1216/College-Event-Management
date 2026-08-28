@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/glass_widgets.dart';
+import '../../utils/app_validators.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -49,9 +50,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final auth = context.read<AuthProvider>();
-    final isStaff = _selectedRole == UserRole.organizer || _selectedRole == UserRole.admin;
+    final isStaff = _selectedRole == UserRole.organizer;
 
     final success = await auth.register(
+
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
       fullName: _nameController.text.trim(),
@@ -96,12 +98,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight),
                     ),
                     const SizedBox(height: 20),
-                    ElevatedButton(
+                    GlassButton(
+                      label: 'Back to Sign In',
+                      icon: Icons.arrow_back_rounded,
+                      height: 44,
                       onPressed: () {
                         Navigator.pop(ctx);
                         Navigator.pop(context);
                       },
-                      child: const Text('Back to Sign In'),
                     ),
                   ],
                 ),
@@ -179,26 +183,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               title: 'Student\nParticipant',
                               icon: Icons.school_rounded,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             _buildRoleSelectCard(
                               role: UserRole.visitor,
                               title: 'Student\nVisitor',
                               icon: Icons.visibility_rounded,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             _buildRoleSelectCard(
                               role: UserRole.organizer,
                               title: 'Event\nOrganizer',
                               icon: Icons.assignment_ind_rounded,
                             ),
-                            const SizedBox(width: 6),
-                            _buildRoleSelectCard(
-                              role: UserRole.admin,
-                              title: 'System\nAdmin',
-                              icon: Icons.shield_rounded,
-                            ),
                           ],
                         ),
+
 
                         const SizedBox(height: 18),
 
@@ -209,29 +208,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _nameController,
                           hintText: 'e.g. John Doe',
                           prefixIcon: Icons.person_outline_rounded,
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Full name is required' : null,
+                          validator: (v) => AppValidators.requiredField(v, 'Full name'),
                         ),
 
                         const SizedBox(height: 14),
 
                         // Email Address
                         Text(
-                          _selectedRole == UserRole.organizer || _selectedRole == UserRole.admin
+                          _selectedRole == UserRole.organizer
                               ? 'Institutional Email *'
                               : 'Email Address *',
                           style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
+
                         const SizedBox(height: 6),
                         GlassTextField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           hintText: 'e.g. user@college.edu',
                           prefixIcon: Icons.email_outlined,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Email is required';
-                            if (!v.contains('@')) return 'Enter a valid email';
-                            return null;
-                          },
+                          validator: AppValidators.email,
                         ),
 
                         const SizedBox(height: 14),
@@ -244,10 +240,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: true,
                           hintText: '•••••••• (min 6 chars)',
                           prefixIcon: Icons.lock_outline_rounded,
-                          validator: (v) {
-                            if (v == null || v.length < 6) return 'Password must be at least 6 characters';
-                            return null;
-                          },
+                          validator: AppValidators.password,
                         ),
 
                         const SizedBox(height: 14),
@@ -260,6 +253,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.phone,
                           hintText: 'e.g. +1 555-0199',
                           prefixIcon: Icons.phone_outlined,
+                          validator: AppValidators.phone,
                         ),
 
                         const SizedBox(height: 14),
@@ -267,28 +261,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         // Department Dropdown
                         Text('Department *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.72),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButtonFormField<String>(
-                              value: _selectedDepartment,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                prefixIcon: Icon(Icons.business_outlined, color: AppColors.primary, size: 20),
-                              ),
-                              items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)))).toList(),
-                              onChanged: (val) {
-                                if (val != null) setState(() => _selectedDepartment = val);
-                              },
-                            ),
-                          ),
+                        GlassDropdown<String>(
+                          value: _selectedDepartment,
+                          prefixIcon: Icons.business_outlined,
+                          items: _departments
+                              .map((d) => DropdownMenuItem(
+                                    value: d,
+                                    child: Text(d, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _selectedDepartment = val);
+                          },
                         ),
 
                         // Participant-only specific fields
@@ -300,15 +284,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _enrollmentController,
                             hintText: 'e.g. CS-2024-001',
                             prefixIcon: Icons.badge_outlined,
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Enrollment number is required for participant registration';
-                              return null;
-                            },
+                            validator: AppValidators.enrollmentNo,
                           ),
                         ],
 
+
                         // Staff approval notice
-                        if (_selectedRole == UserRole.organizer || _selectedRole == UserRole.admin) ...[
+                        if (_selectedRole == UserRole.organizer) ...[
                           const SizedBox(height: 14),
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -323,7 +305,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    'Staff accounts require Admin verification before event management tools are unlocked.',
+                                    'Organizer accounts require Admin verification before event creation tools are unlocked.',
                                     style: TextStyle(fontSize: 11, color: AppColors.deepNavy),
                                   ),
                                 ),
@@ -331,6 +313,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                         ],
+
 
                         const SizedBox(height: 24),
 
@@ -374,41 +357,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Expanded(
       child: InkWell(
         onTap: () => setState(() => _selectedRole = role),
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryContainer.withOpacity(0.85) : Colors.white.withOpacity(0.65),
-            borderRadius: BorderRadius.circular(14),
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFF2563EB), Color(0xFF0284C7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: isSelected ? null : Colors.white.withOpacity(0.70),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.8),
-              width: isSelected ? 2 : 1,
+              color: isSelected ? Colors.white.withOpacity(0.4) : Colors.white.withOpacity(0.85),
+              width: isSelected ? 1.5 : 1,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.2),
+                      color: AppColors.primary.withOpacity(0.35),
                       blurRadius: 10,
-                      offset: const Offset(0, 2),
+                      offset: const Offset(0, 3),
                     ),
                   ]
-                : null,
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
-                color: isSelected ? AppColors.primary : AppColors.textSecondaryLight,
+                color: isSelected ? Colors.white : AppColors.textSecondaryLight,
                 size: 22,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 5),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  fontSize: 10,
+                  fontSize: 10.5,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? AppColors.primaryDark : AppColors.textSecondaryLight,
+                  color: isSelected ? Colors.white : AppColors.textSecondaryLight,
                   height: 1.15,
                 ),
               ),

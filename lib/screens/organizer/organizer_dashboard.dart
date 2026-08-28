@@ -65,45 +65,37 @@ class _OrganizerDashboardState extends State<OrganizerDashboard> {
       appBar: AppBar(
         title: Text('Organizer Control Suite', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
         actions: [
-          IconButton(
+          GlassIconButton(
             tooltip: 'App Sitemap',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.8)),
-              ),
-              child: const Icon(Icons.account_tree_outlined, color: AppColors.primary, size: 20),
-            ),
+            icon: Icons.account_tree_outlined,
+            iconColor: AppColors.primary,
+            size: 38,
+            iconSize: 18,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SitemapScreen())),
           ),
+          const SizedBox(width: 8),
           Stack(
+            clipBehavior: Clip.none,
             children: [
-              IconButton(
+              GlassIconButton(
                 tooltip: 'Notifications',
-                icon: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.6),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.8)),
-                  ),
-                  child: const Icon(Icons.notifications_outlined, color: AppColors.primary, size: 20),
-                ),
+                icon: Icons.notifications_outlined,
+                iconColor: AppColors.primary,
+                size: 38,
+                iconSize: 18,
                 onPressed: () => NotificationSheet.show(context),
               ),
               if (unreadNotifs > 0)
                 Positioned(
-                  right: 8,
-                  top: 6,
+                  right: 0,
+                  top: -2,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.error,
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
-                        BoxShadow(color: AppColors.error.withOpacity(0.4), blurRadius: 6),
+                        BoxShadow(color: AppColors.error.withOpacity(0.5), blurRadius: 6),
                       ],
                     ),
                     child: Text(
@@ -114,7 +106,7 @@ class _OrganizerDashboardState extends State<OrganizerDashboard> {
                 ),
             ],
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: SingleChildScrollView(
@@ -506,30 +498,29 @@ class _OrganizerDashboardState extends State<OrganizerDashboard> {
 
               // Make Live toggle
               if (e.status == EventStatus.approved)
-                ElevatedButton.icon(
+                GlassButton(
+                  label: 'Start (Live)',
+                  icon: Icons.play_arrow_rounded,
+                  color: AppColors.statusLive,
+                  height: 38,
                   onPressed: () => provider.setEventLive(e.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.statusLive,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  ),
-                  icon: const Icon(Icons.play_arrow_rounded, size: 16),
-                  label: const Text('Start (Live)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                 )
               else if (e.status == EventStatus.live)
-                ElevatedButton.icon(
+                GlassButton(
+                  label: 'End Event',
+                  icon: Icons.stop_rounded,
+                  color: AppColors.statusCompleted,
+                  height: 38,
                   onPressed: () => provider.completeEvent(e.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.statusCompleted,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  ),
-                  icon: const Icon(Icons.stop_rounded, size: 16),
-                  label: const Text('End Event', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                 ),
 
               // Scan / Check in shortcut
-              IconButton(
+              GlassIconButton(
                 tooltip: 'Scan Attendee QRs',
-                icon: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary),
+                icon: Icons.qr_code_scanner_rounded,
+                iconColor: AppColors.primary,
+                size: 38,
+                iconSize: 18,
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => QrAttendanceScannerScreen(initialEventId: e.id)),

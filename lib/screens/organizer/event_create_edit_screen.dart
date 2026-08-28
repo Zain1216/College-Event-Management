@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/event_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/glass_widgets.dart';
+import '../../utils/app_validators.dart';
 
 class EventCreateEditScreen extends StatefulWidget {
   final EventModel? existingEvent;
@@ -224,72 +225,47 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
                       controller: _titleController,
                       hintText: 'e.g. RoboClash 2026: 15kg Combat Arena',
                       prefixIcon: Icons.title_rounded,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Title is required' : null,
+                      validator: (v) => AppValidators.requiredField(v, 'Title'),
                     ),
 
                     const SizedBox(height: 14),
 
-                    // Category & Department row
-                    Row(
-                      children: [
-                        // Category Dropdown
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Category *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.72),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButtonFormField<EventCategory>(
-                                    value: _category,
-                                    decoration: const InputDecoration(border: InputBorder.none),
-                                    items: EventCategory.values.map((c) => DropdownMenuItem(value: c, child: Text(c.displayName, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600)))).toList(),
-                                    onChanged: (v) {
-                                      if (v != null) setState(() => _category = v);
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Department Dropdown
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Department *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.72),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButtonFormField<String>(
-                                    value: _department,
-                                    decoration: const InputDecoration(border: InputBorder.none),
-                                    items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis))).toList(),
-                                    onChanged: (v) {
-                                      if (v != null) setState(() => _department = v);
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 14),
+
+                    // Category Dropdown
+                    Text('Category *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 6),
+                    GlassDropdown<EventCategory>(
+                      value: _category,
+                      prefixIcon: Icons.category_outlined,
+                      items: EventCategory.values
+                          .map((c) => DropdownMenuItem(
+                                value: c,
+                                child: Text(c.displayName, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _category = val);
+                      },
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Department Dropdown
+                    Text('Host Department *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 6),
+                    GlassDropdown<String>(
+                      value: _department,
+                      prefixIcon: Icons.business_outlined,
+                      items: _departments
+                          .map((d) => DropdownMenuItem(
+                                value: d,
+                                child: Text(d, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _department = val);
+                      },
                     ),
 
                     const SizedBox(height: 14),
@@ -301,7 +277,7 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
                       controller: _descController,
                       maxLines: 4,
                       hintText: 'Comprehensive schedule, eligibility rules, judging criteria, prize details...',
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Description is required' : null,
+                      validator: (v) => AppValidators.requiredField(v, 'Description'),
                     ),
 
                     const SizedBox(height: 14),
@@ -319,7 +295,7 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
                                 onTap: _pickDate,
                                 borderRadius: BorderRadius.circular(16),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.72),
                                     borderRadius: BorderRadius.circular(16),
@@ -328,8 +304,14 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
                                   child: Row(
                                     children: [
                                       const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.primary),
-                                      const SizedBox(width: 8),
-                                      Text(DateFormat('MMM dd, yyyy').format(_selectedDate), style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12.5)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          DateFormat('MMM dd, yyyy').format(_selectedDate),
+                                          style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -346,8 +328,9 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
                               const SizedBox(height: 6),
                               GlassTextField(
                                 controller: _timeController,
-                                hintText: '10:00 AM - 04:00 PM',
+                                hintText: '10 AM - 4 PM',
                                 prefixIcon: Icons.schedule_rounded,
+                                validator: (v) => AppValidators.requiredField(v, 'Time'),
                               ),
                             ],
                           ),
@@ -357,28 +340,22 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
 
                     const SizedBox(height: 14),
 
-                    // Venue & Slot limit
+                    // Venue (Full-width for long venue names)
+                    Text('Campus Venue / Hall *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 6),
+                    GlassTextField(
+                      controller: _venueController,
+                      hintText: 'e.g. Computing Lab 4 / Main Auditorium',
+                      prefixIcon: Icons.location_on_outlined,
+                      validator: (v) => AppValidators.requiredField(v, 'Venue'),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Capacity & Fee (Balanced 50/50 Row)
                     Row(
                       children: [
                         Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Campus Venue / Hall *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 6),
-                              GlassTextField(
-                                controller: _venueController,
-                                hintText: 'e.g. Computing Lab 4',
-                                prefixIcon: Icons.location_on_outlined,
-                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Venue is required' : null,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 1,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -389,11 +366,69 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
                                 keyboardType: TextInputType.number,
                                 hintText: '150',
                                 prefixIcon: Icons.group_outlined,
+                                validator: (v) => AppValidators.positiveInteger(v, 'Capacity', min: 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Cert Fee (\$) *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
+                              const SizedBox(height: 6),
+                              GlassTextField(
+                                controller: _feeController,
+                                keyboardType: TextInputType.number,
+                                hintText: '0.00',
+                                prefixIcon: Icons.attach_money_rounded,
                               ),
                             ],
                           ),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Guidelines PDF Attachment (Full-width card)
+                    Text('Official Guidelines PDF', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.72),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.error, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Attach Rules & Criteria PDF', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                                Text('Make guidelines downloadable for participants', style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.textSecondaryLight)),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: _guidelinesAttached,
+                            activeColor: AppColors.primary,
+                            onChanged: (val) => setState(() => _guidelinesAttached = val),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 14),
@@ -405,58 +440,6 @@ class _EventCreateEditScreenState extends State<EventCreateEditScreen> {
                       controller: _bannerUrlController,
                       hintText: 'https://images.unsplash.com/...',
                       prefixIcon: Icons.image_outlined,
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // Certificate Fee & Guidelines Attachment
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Certificate Fee (\$) *', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 6),
-                              GlassTextField(
-                                controller: _feeController,
-                                keyboardType: TextInputType.number,
-                                prefixIcon: Icons.attach_money_rounded,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Guidelines PDF', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.72),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.picture_as_pdf_rounded, color: AppColors.error, size: 20),
-                                    const SizedBox(width: 6),
-                                    Expanded(child: Text('PDF', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w800))),
-                                    Switch(
-                                      value: _guidelinesAttached,
-                                      activeColor: AppColors.primary,
-                                      onChanged: (val) => setState(() => _guidelinesAttached = val),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
 
                     const SizedBox(height: 14),

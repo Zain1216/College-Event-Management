@@ -207,12 +207,15 @@ class _EventCatalogScreenState extends State<EventCatalogScreen> {
                               style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
                             ),
                             const SizedBox(height: 14),
-                            ElevatedButton(
+                            GlassButton(
+                              label: 'Reset All Filters',
+                              icon: Icons.refresh_rounded,
+                              isPrimary: false,
+                              height: 42,
                               onPressed: () {
                                 _searchController.clear();
                                 eventProvider.resetFilters();
                               },
-                              child: const Text('Reset All Filters'),
                             ),
                           ],
                         ),

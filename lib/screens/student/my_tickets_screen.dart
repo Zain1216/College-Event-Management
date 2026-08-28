@@ -396,21 +396,24 @@ class MyTicketsScreen extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () => _showFullQrPass(context, reg),
                     icon: const Icon(Icons.qr_code_2_rounded, size: 16),
-                    label: Text('Open Pass', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                    label: Text('Open Full Pass', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 12.5)),
                   ),
-                  TextButton(
+                  TextButton.icon(
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Cancel Registration?'),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          title: Text('Cancel Registration?', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
                           content: const Text('Are you sure you want to cancel your seat registration for this event?'),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Keep Seat')),
+                            GlassButton(
+                              label: 'Yes, Cancel Seat',
+                              icon: Icons.cancel_outlined,
+                              color: AppColors.error,
+                              height: 40,
                               onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Yes, Cancel Seat'),
                             ),
                           ],
                         ),
@@ -419,7 +422,8 @@ class MyTicketsScreen extends StatelessWidget {
                         await provider.cancelRegistration(reg.id);
                       }
                     },
-                    child: Text('Cancel Seat', style: GoogleFonts.inter(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w700)),
+                    icon: const Icon(Icons.cancel_outlined, size: 15, color: AppColors.error),
+                    label: Text('Cancel Seat', style: GoogleFonts.inter(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),

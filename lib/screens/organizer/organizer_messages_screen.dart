@@ -110,30 +110,17 @@ class _OrganizerMessagesScreenState extends State<OrganizerMessagesScreen> {
                   const SizedBox(height: 14),
 
                   // Target Event Selector
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.72),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedEventId,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          labelText: 'Target Event Audience',
-                          prefixIcon: Icon(Icons.group_rounded, color: AppColors.primary),
-                        ),
-                        items: [
-                          const DropdownMenuItem(value: 'all', child: Text('All Registered Students (Campus-wide)')),
-                          ...myEvents.map((e) => DropdownMenuItem(value: e.id, child: Text(e.title, overflow: TextOverflow.ellipsis))),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedEventId = val);
-                        },
-                      ),
-                    ),
+                  GlassDropdown<String>(
+                    value: _selectedEventId,
+                    labelText: 'Target Event Audience',
+                    prefixIcon: Icons.group_rounded,
+                    items: [
+                      const DropdownMenuItem(value: 'all', child: Text('All Registered Students (Campus-wide)', overflow: TextOverflow.ellipsis)),
+                      ...myEvents.map((e) => DropdownMenuItem(value: e.id, child: Text(e.title, overflow: TextOverflow.ellipsis))),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedEventId = val);
+                    },
                   ),
 
                   const SizedBox(height: 12),

@@ -106,7 +106,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   ],
                                 ),
                               ),
-                              ElevatedButton(
+                              GlassButton(
+                                label: 'Approve',
+                                icon: Icons.verified_user_rounded,
+                                color: AppColors.statusLive,
+                                height: 36,
+                                borderRadius: 12,
                                 onPressed: () async {
                                   await adminProvider.toggleUserApproval(staff.uid, true);
                                   if (context.mounted) {
@@ -115,11 +120,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     );
                                   }
                                 },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.statusLive,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                ),
-                                child: const Text('Approve', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                               ),
                             ],
                           ),

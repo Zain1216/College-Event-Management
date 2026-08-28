@@ -116,26 +116,18 @@ class _ReportCenterScreenState extends State<ReportCenterScreen> {
                 children: [
                   Text('Select Department Scope for Report', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.72),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.85), width: 1.2),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedDepartment,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          prefixIcon: Icon(Icons.domain_rounded, color: AppColors.primary),
-                        ),
-                        items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)))).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedDepartment = val);
-                        },
-                      ),
-                    ),
+                  GlassDropdown<String>(
+                    value: _selectedDepartment,
+                    prefixIcon: Icons.domain_rounded,
+                    items: _departments
+                        .map((d) => DropdownMenuItem(
+                              value: d,
+                              child: Text(d, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedDepartment = val);
+                    },
                   ),
                 ],
               ),
@@ -177,13 +169,13 @@ class _ReportCenterScreenState extends State<ReportCenterScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton.icon(
+                  GlassButton(
+                    label: 'Export PDF',
+                    icon: Icons.download_rounded,
+                    height: 40,
+                    borderRadius: 12,
+                    isLoading: _isExporting,
                     onPressed: _isExporting ? null : _exportPdf,
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                    icon: _isExporting
-                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(Icons.download_rounded, size: 16),
-                    label: const Text('Export PDF', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                   ),
                 ],
               ),
@@ -218,11 +210,13 @@ class _ReportCenterScreenState extends State<ReportCenterScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton.icon(
+                  GlassButton(
+                    label: 'Export Excel',
+                    icon: Icons.file_download_rounded,
+                    color: AppColors.statusLive,
+                    height: 40,
+                    borderRadius: 12,
                     onPressed: _exportExcel,
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusLive),
-                    icon: const Icon(Icons.file_download_rounded, size: 16),
-                    label: const Text('Export Excel', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
                   ),
                 ],
               ),

@@ -5,7 +5,9 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/glass_widgets.dart';
+import '../../utils/app_validators.dart';
 import 'register_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -100,60 +102,63 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 22),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Cancel'),
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancel'),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: isSubmitting
-                              ? null
-                              : () async {
-                                  final email = resetEmailController.text.trim();
-                                  if (email.isEmpty || !email.contains('@')) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        backgroundColor: AppColors.error,
-                                        content: Text('Please enter a valid email address.'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
-                                  setModalState(() => isSubmitting = true);
-                                  try {
-                                    final msg = await context.read<AuthProvider>().requestPasswordReset(email);
-                                    if (ctx.mounted) {
-                                      Navigator.pop(ctx);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          backgroundColor: AppColors.statusLive,
-                                          content: Text(msg),
-                                          duration: const Duration(seconds: 4),
-                                        ),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    setModalState(() => isSubmitting = false);
-                                    if (ctx.mounted) {
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: GlassButton(
+                            label: 'Send Reset Link',
+                            icon: Icons.send_rounded,
+                            height: 44,
+                            isLoading: isSubmitting,
+                            onPressed: isSubmitting
+                                ? null
+                                : () async {
+                                    final email = resetEmailController.text.trim();
+                                    final err = AppValidators.email(email);
+                                    if (err != null) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           backgroundColor: AppColors.error,
-                                          content: Text(e.toString().replaceAll('Exception: ', '')),
+                                          content: Text(err),
                                         ),
                                       );
+                                      return;
                                     }
-                                  }
-                                },
-                          child: isSubmitting
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                )
-                              : const Text('Send Reset Link'),
+
+
+                                    setModalState(() => isSubmitting = true);
+                                    try {
+                                      final msg = await context.read<AuthProvider>().requestPasswordReset(email);
+                                      if (ctx.mounted) {
+                                        Navigator.pop(ctx);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            backgroundColor: AppColors.statusLive,
+                                            content: Text(msg),
+                                            duration: const Duration(seconds: 4),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      setModalState(() => isSubmitting = false);
+                                      if (ctx.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            backgroundColor: AppColors.error,
+                                            content: Text(e.toString().replaceAll('Exception: ', '')),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                          ),
                         ),
                       ],
                     ),
@@ -216,11 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintText: 'e.g. user@college.edu',
                           prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Email is required';
-                            if (!v.contains('@')) return 'Enter a valid email address';
-                            return null;
-                          },
+                          validator: AppValidators.email,
                         ),
 
                         const SizedBox(height: 16),
@@ -260,11 +261,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                           ),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Password is required';
-                            return null;
-                          },
+                          validator: AppValidators.password,
                         ),
+
 
                         const SizedBox(height: 24),
 
@@ -317,3 +316,5 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+
